@@ -1,0 +1,12 @@
+# IntelliJ
+.idea
+
+# Gradle
+.gradle
+build/**
+
+#Maven
+target/**
+
+# Log Files
+logs/**

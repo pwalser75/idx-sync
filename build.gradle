@@ -1,0 +1,92 @@
+plugins {
+    id 'java-library'
+    id "com.github.ben-manes.versions" version "0.39.0"
+    id "com.github.johnrengelman.shadow" version "6.0.0"
+}
+
+description = 'Idx Sync CLI'
+group = 'ch.frostnova.cli'
+version = '1.0.0-SNAPSHOT'
+
+ext {
+    mainClass = "ch.frostnova.cli.idx.sync.Main"
+    shadowJarBaseName = project.name + "-shadow"
+
+    dateTimeFormat = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    buildDate = java.time.LocalDateTime.now()
+
+    junitVersion = '5.7.+'
+    assertjVersion = '3.16.+'
+    mockitoVersion = '3.11.+'
+    slf4jVersion = '1.7.+'
+    logbackVersion = '1.2.3'
+
+    libs = [
+            testBase   : [
+                    "org.junit.jupiter:junit-jupiter-api:${junitVersion}",
+                    "org.assertj:assertj-core:$assertjVersion",
+                    "org.mockito:mockito-core:${mockitoVersion}"
+            ],
+            testRuntime: [
+                    "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+            ],
+            loggingAPI : [
+                    "org.slf4j:slf4j-api:${slf4jVersion}"
+            ],
+            loggingImpl: [
+                    "org.slf4j:jcl-over-slf4j:${slf4jVersion}",
+                    "org.slf4j:jul-to-slf4j:${slf4jVersion}",
+                    "ch.qos.logback:logback-classic:${logbackVersion}"
+            ]
+    ]
+}
+
+dependencies {
+    testImplementation libs.testBase
+    testRuntimeOnly libs.testRuntime
+    implementation libs.loggingAPI
+    implementation libs.loggingImpl
+}
+
+defaultTasks 'clean', 'build', 'shadowJar'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+    withJavadocJar()
+    withSourcesJar()
+}
+test {
+    useJUnitPlatform()
+}
+jar {
+    manifest {
+        attributes(
+                "Name": project.name,
+                "Version": project.version,
+                "Build-Date": dateTimeFormat.format(buildDate),
+                "Main-Class": mainClass
+        )
+    }
+}
+shadowJar {
+    baseName = shadowJarBaseName
+    classifier = ''
+    archiveVersion = ''
+}
+repositories {
+    mavenCentral()
+}
+
+def isNonStable = { String version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
+}
+
+tasks.named("dependencyUpdates").configure {
+    rejectVersionIf {
+        isNonStable(it.candidate.version)
+    }
+}
