@@ -22,3 +22,9 @@ with Gradle (default tasks: _clean build shadowJar_):
 with Maven (default tasks: _clean install_):
 
     mvn
+
+## Maintenance
+
+To check for updated dependency versions, run:
+
+    gradle dependencyUpdates
