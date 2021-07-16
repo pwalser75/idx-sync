@@ -16,7 +16,6 @@ ext {
     buildDate = java.time.LocalDateTime.now()
 
     jacksonVersion = '2.11.+'
-    progressBarVersion = '0.9.+'
     junitVersion = '5.7.+'
     assertjVersion = '3.16.+'
     mockitoVersion = '3.11.+'
@@ -26,10 +25,8 @@ ext {
     libs = [
             jackson    : [
                     "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
-                    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
-            ],
-            progressBar: [
-                    "me.tongfei:progressbar:$progressBarVersion"
+                    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion",
+                    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}",
             ],
             loggingAPI : [
                     "org.slf4j:slf4j-api:${slf4jVersion}"
