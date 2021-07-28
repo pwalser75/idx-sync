@@ -79,6 +79,10 @@ public class IdxSyncFile {
         this.tags = tags;
     }
 
+    public static Path resolve(Path parent) {
+        return parent.resolve(FILENAME);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
