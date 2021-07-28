@@ -2,6 +2,9 @@ package ch.frostnova.cli.idx.sync.task;
 
 import ch.frostnova.cli.idx.sync.monitor.ProgressMonitor;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 public class TaskRunner {
 
     private final ProgressMonitor progressMonitor;
@@ -15,19 +18,28 @@ public class TaskRunner {
         ExecutionResult<R> result = new ExecutionResult<>();
         Thread runner = new Thread(() -> {
             try {
-                result.done(task.run());
-                progressMonitor.done(task.getName(), "done");
+                R taskResult = task.run();
+                synchronized (result) {
+                    result.done(taskResult);
+                    progressMonitor.done(task.getName(), "done");
+                }
             } catch (Exception ex) {
-                result.done(ex);
-                progressMonitor.done(task.getName(), "failed: " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
+                synchronized (result) {
+                    result.done(ex);
+                    progressMonitor.done(task.getName(), "failed: " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
+                }
             }
         });
         Thread monitor = new Thread(() -> {
             try {
                 while (!result.isDone()) {
-                    progressMonitor.update(task.getName(), task.getProgress(), task.getMessage());
+                    synchronized (result) {
+                        if (!result.isDone()) {
+                            progressMonitor.update(task.getName(), max(0, min(1, task.getProgress())), task.getMessage());
+                        }
+                    }
                 }
-                Thread.sleep(20);
+                Thread.sleep(50);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }

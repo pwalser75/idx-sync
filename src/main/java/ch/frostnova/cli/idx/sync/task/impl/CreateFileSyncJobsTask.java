@@ -51,7 +51,7 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
             this.message = path.toString();
             Path relativePath = syncJob.getSource().relativize(path);
             boolean skip = skip(relativePath);
-            if (Files.isRegularFile(path) && !runUnchecked(() -> Files.isHidden(path)) && !skip) {
+            if (!runUnchecked(() -> Files.isHidden(path)) && !skip) {
                 relativePaths.add(relativePath);
                 return true;
             }
@@ -65,7 +65,7 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
             this.message = path.toString();
             Path relativePath = syncJob.getTarget().relativize(path);
             boolean skip = skip(relativePath);
-            if (Files.isRegularFile(path) && !runUnchecked(() -> Files.isHidden(path)) && !skip) {
+            if (!runUnchecked(() -> Files.isHidden(path)) && !skip) {
                 relativePaths.add(relativePath);
                 return true;
             }
@@ -80,11 +80,14 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
             this.message = relativePath.toString();
             Path sourcePath = syncJob.getSource().resolve(relativePath);
             Path targetPath = syncJob.getTarget().resolve(relativePath);
-            if (!Files.exists(targetPath)) {
-                result.add(new FileSyncJob(relativePath, CREATE, runUnchecked(() -> Files.size(sourcePath))));
+            if (!Files.exists(targetPath) && Files.isRegularFile(sourcePath) && Files.isReadable(sourcePath)) {
+                result.add(new FileSyncJob(sourcePath, targetPath, CREATE, runUnchecked(() -> Files.size(sourcePath))));
             } else if (!Files.exists(sourcePath)) {
-                result.add(new FileSyncJob(relativePath, DELETE));
-            } else {
+                result.add(new FileSyncJob(sourcePath, targetPath, DELETE));
+            } else if (Files.isRegularFile(sourcePath) && Files.isReadable(sourcePath)) {
+                if (!Files.isRegularFile(targetPath)) {
+                    runUnchecked(() -> Files.delete(targetPath));
+                }
                 Long sourceFileSize = runUnchecked(() -> Files.size(sourcePath));
                 Long targetFileSize = runUnchecked(() -> Files.size(targetPath));
 
@@ -98,7 +101,7 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
                 if (!Objects.equals(sourceFileSize, targetFileSize) || deltaTime.compareTo(Duration.ofSeconds(1)) > 0) {
                     String info = String.format("%s: %s?=%s, %s?=%s, %s", relativePath,
                             sourceFileSize, targetFileSize, sourceLastModified, targetLastModified, deltaTime);
-                    result.add(new FileSyncJob(relativePath, UPDATE, sourceFileSize, info));
+                    result.add(new FileSyncJob(sourcePath, targetPath, UPDATE, sourceFileSize, info));
                 }
             }
             index++;

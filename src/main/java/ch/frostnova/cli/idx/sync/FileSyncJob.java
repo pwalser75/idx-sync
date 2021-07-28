@@ -4,31 +4,34 @@ import java.nio.file.Path;
 
 public class FileSyncJob {
 
-    private final static double FIXED_FILE_COST = 1e-4;
-    private final static double FILE_COST_PER_BYTE = 2.75e-9;
-
-    private final Path relativePath;
+    private final Path sourcePath;
+    private final Path targetPath;
     private final SyncAction syncAction;
     private final long fileSize;
     private final String reason;
 
-    public FileSyncJob(Path relativePath, SyncAction syncAction) {
-        this(relativePath, syncAction, 0, null);
+    public FileSyncJob(Path sourcePath, Path targetPath, SyncAction syncAction) {
+        this(sourcePath, targetPath, syncAction, 0, null);
     }
 
-    public FileSyncJob(Path relativePath, SyncAction syncAction, long fileSize) {
-        this(relativePath, syncAction, fileSize, null);
+    public FileSyncJob(Path sourcePath, Path targetPath, SyncAction syncAction, long fileSize) {
+        this(sourcePath, targetPath, syncAction, fileSize, null);
     }
 
-    public FileSyncJob(Path relativePath, SyncAction syncAction, long fileSize, String reason) {
-        this.relativePath = relativePath;
+    public FileSyncJob(Path sourcePath, Path targetPath, SyncAction syncAction, long fileSize, String reason) {
+        this.sourcePath = sourcePath;
+        this.targetPath = targetPath;
         this.syncAction = syncAction;
         this.fileSize = fileSize;
         this.reason = reason;
     }
 
-    public Path getRelativePath() {
-        return relativePath;
+    public Path getSourcePath() {
+        return sourcePath;
+    }
+
+    public Path getTargetPath() {
+        return targetPath;
     }
 
     public SyncAction getSyncAction() {
@@ -47,8 +50,10 @@ public class FileSyncJob {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append(syncAction);
-        builder.append(", ");
-        builder.append(relativePath);
+        builder.append(", source: ");
+        builder.append(sourcePath);
+        builder.append(", target: ");
+        builder.append(targetPath);
         if (fileSize > 0) {
             builder.append(", ");
             builder.append(fileSize + " bytes");
