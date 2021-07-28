@@ -1,6 +1,8 @@
 # Idx SYNC (incubation)
 
-(!) Incubation project - not yet usable
+(!) Incubation project - not yet reliable.
+
+![](./screenshot.png)
 
 ## Description
 
