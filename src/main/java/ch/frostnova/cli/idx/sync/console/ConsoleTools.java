@@ -8,7 +8,7 @@ import static ch.frostnova.cli.idx.sync.console.AnsiEscape.format;
 public final class ConsoleTools {
 
     private static final int BAR_SIZE = 40;
-    private static final int MAX_SIZE = 120;
+    private static final int MAX_SIZE = 160;
 
     private static final String LEFT_BRACKET = AnsiEscape.ANSI_YELLOW + "│";
     private static final String RIGHT_BRACKET = "│" + AnsiEscape.ANSI_RESET;

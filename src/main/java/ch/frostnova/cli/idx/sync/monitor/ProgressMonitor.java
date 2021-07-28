@@ -6,19 +6,24 @@ package ch.frostnova.cli.idx.sync.monitor;
 public interface ProgressMonitor {
 
     /**
-     * Update the current progress.
+     * Start the progress with the given task name
      *
      * @param taskName name of the task, required
+     */
+    void start(String taskName);
+
+    /**
+     * Update the current progress.
+     *
      * @param progress progress (0..1 = 0..100%)
      * @param message  message, optional
      */
-    void update(String taskName, double progress, String message);
+    void update(double progress, String message);
 
     /**
      * Tells the monitor that the task is done (regardless of whether it was successful or not).
      *
-     * @param taskName name of the task, required
-     * @param message  message to display (what was done, or error that occurred).
+     * @param message message to display (what was done, or error that occurred).
      */
-    void done(String taskName, String message);
+    void done(String message);
 }

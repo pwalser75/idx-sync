@@ -13,8 +13,10 @@ import ch.frostnova.cli.idx.sync.task.impl.SyncFilesTask;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -30,6 +32,11 @@ import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_ORANGE;
 import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_RED;
 import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_YELLOW;
 import static ch.frostnova.cli.idx.sync.console.AnsiEscape.format;
+import static ch.frostnova.cli.idx.sync.util.ByteFormat.formatBytes;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsFirst;
+import static java.util.Comparator.nullsLast;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -92,16 +99,20 @@ public class IdxSync {
 
         List<SyncJob> result = new ArrayList<>();
 
+        Comparator<IdxSyncFile> syncFileComparator = comparing(IdxSyncFile::getSourceFolderId, nullsFirst(naturalOrder()))
+                .thenComparing(IdxSyncFile::getFolderName, nullsLast(Collator.getInstance()));
+
         Map<IdxSyncFile, Path> syncFilePaths = taskRunner.run(new FindSyncFilesTask());
         if (syncFilePaths.isEmpty()) {
             System.out.printf("No %s files found.\n", IdxSyncFile.FILENAME);
         } else {
             System.out.printf("Found following %s files:\n", IdxSyncFile.FILENAME);
-            syncFilePaths.forEach((syncFile, path) -> {
+            syncFilePaths.keySet().stream().sorted(syncFileComparator).forEach(syncFile -> {
+                Path path = syncFilePaths.get(syncFile);
                 if (syncFile.getSourceFolderId() != null) {
-                    System.out.printf("- \uD83D\uDD04 %s: source = %s in %s\n", format(syncFile.getFolderId(), ANSI_BOLD, ANSI_CYAN), format(syncFile.getSourceFolderId(), ANSI_CYAN), path);
+                    System.out.printf("- \uD83D\uDD04 %s: source = %s in %s\n", format(syncFile.getFolderId(), ANSI_BOLD, ANSI_CYAN), format(syncFile.getSourceFolderId(), ANSI_CYAN), path.getParent());
                 } else {
-                    System.out.printf("- \uD83D\uDD04 %s: %s, in %s\n", format(syncFile.getFolderId(), ANSI_BOLD, ANSI_CYAN), format(syncFile.getFolderName(), ANSI_CYAN), path);
+                    System.out.printf("- \uD83D\uDD04 %s: %s, in %s\n", format(syncFile.getFolderId(), ANSI_BOLD, ANSI_CYAN), format(syncFile.getFolderName(), ANSI_CYAN), path.getParent());
                 }
             });
         }
@@ -117,7 +128,8 @@ public class IdxSync {
             System.out.println("No matching sync folders found.");
         } else {
             System.out.println("Matching sync folders found:");
-            syncSourceTarget.forEach((target, source) -> {
+            syncSourceTarget.keySet().stream().sorted(syncFileComparator).forEach(target -> {
+                IdxSyncFile source = syncSourceTarget.get(target);
                 System.out.printf("- ✅ %s %s -> %s\n", format(source.getFolderName(), ANSI_BOLD, ANSI_GREEN), syncFilePaths.get(source).getParent(), syncFilePaths.get(target).getParent());
                 result.add(new SyncJob(source.getFolderName(), syncFilePaths.get(source).getParent(), syncFilePaths.get(target).getParent()));
             });
@@ -146,12 +158,12 @@ public class IdxSync {
             System.out.printf("- %s files deleted\n", format(syncResult.getFilesDeleted(), ANSI_BOLD, ANSI_ORANGE));
         }
         if (syncResult.getBytesTransferred() > 0) {
-            System.out.printf("- %s bytes transferred\n", format(syncResult.getBytesTransferred(), ANSI_BOLD, ANSI_YELLOW));
+            System.out.printf("- %s transferred\n", format(formatBytes(syncResult.getBytesTransferred()), ANSI_BOLD, ANSI_YELLOW));
         }
         if (syncResult.getErrors().size() > 0) {
             System.out.printf("- %s errors\n", format(syncResult.getErrors().size(), ANSI_BOLD, ANSI_RED));
             for (String error : syncResult.getErrors()) {
-                System.out.printf("  %s", format(error, ANSI_RED));
+                System.out.printf("  %s\n", format(error, ANSI_RED));
             }
         }
     }
@@ -176,6 +188,7 @@ public class IdxSync {
         Files.createDirectories(path);
         checkWriteableDir(path);
         IdxSyncFile syncFile = new IdxSyncFile();
+        syncFile.setFolderId(UUID.randomUUID().toString());
         syncFile.setSourceFolderId(sourceFolderId);
         try (Writer writer = Files.newBufferedWriter(IdxSyncFile.resolve(path))) {
             ObjectMappers.yaml().writeValue(writer, syncFile);

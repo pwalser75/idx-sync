@@ -1,5 +1,6 @@
 package ch.frostnova.cli.idx.sync.console;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import static java.util.Arrays.stream;
@@ -12,7 +13,7 @@ public enum AnsiEscape {
 
     ANSI_RESET("0m"),
     ANSI_BOLD("1m"),
-    ANSI_GRAY("38;5;36m"),
+    ANSI_GRAY("38;5;244m"),
 
     ANSI_BLUE("38;5;75m"),
     ANSI_CYAN("38;5;79m"),
@@ -48,5 +49,9 @@ public enum AnsiEscape {
     @Override
     public String toString() {
         return escapeSequence;
+    }
+
+    public static void main(String[] args) {
+        Arrays.stream(AnsiEscape.values()).map(v -> format(v.name(), v)).forEach(System.out::println);
     }
 }

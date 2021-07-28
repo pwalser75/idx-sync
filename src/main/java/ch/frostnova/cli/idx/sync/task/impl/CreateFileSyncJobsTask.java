@@ -85,9 +85,6 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
             } else if (!Files.exists(sourcePath)) {
                 result.add(new FileSyncJob(sourcePath, targetPath, DELETE));
             } else if (Files.isRegularFile(sourcePath) && Files.isReadable(sourcePath)) {
-                if (!Files.isRegularFile(targetPath)) {
-                    runUnchecked(() -> Files.delete(targetPath));
-                }
                 Long sourceFileSize = runUnchecked(() -> Files.size(sourcePath));
                 Long targetFileSize = runUnchecked(() -> Files.size(targetPath));
 

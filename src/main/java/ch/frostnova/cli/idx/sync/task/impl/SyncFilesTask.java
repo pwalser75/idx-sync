@@ -3,12 +3,17 @@ package ch.frostnova.cli.idx.sync.task.impl;
 import ch.frostnova.cli.idx.sync.FileSyncJob;
 import ch.frostnova.cli.idx.sync.SyncResult;
 import ch.frostnova.cli.idx.sync.task.Task;
+import ch.frostnova.cli.idx.sync.util.Invocation;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +95,7 @@ public class SyncFilesTask implements Task<SyncResult> {
                         filesUpdated++;
                     }
                 } else if (fileSyncJob.getSyncAction() == DELETE) {
-                    Files.delete(fileSyncJob.getTargetPath());
+                    delete(fileSyncJob.getTargetPath());
                     filesDeleted++;
                 }
             } catch (Exception ex) {
@@ -114,5 +119,26 @@ public class SyncFilesTask implements Task<SyncResult> {
 
     private static double getCost(FileSyncJob fileSyncJob) {
         return FIXED_FILE_COST + fileSyncJob.getFileSize() * FILE_COST_PER_BYTE;
+    }
+
+    private static void delete(Path path) {
+        if (!Files.exists(path)) {
+            return;
+        }
+        Invocation.runUnchecked(() -> {
+            Files.walkFileTree(path, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    Files.delete(dir);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.delete(file);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        });
     }
 }

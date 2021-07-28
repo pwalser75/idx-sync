@@ -7,14 +7,13 @@ import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
 public class IdxSyncFile {
 
     public static final Path FILENAME = Paths.get(".idxsync");
 
     @JsonProperty("folder-id")
-    private String folderId = UUID.randomUUID().toString();
+    private String folderId;
 
     @JsonProperty("folder-name")
     private String folderName;

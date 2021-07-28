@@ -4,46 +4,64 @@ import ch.frostnova.cli.idx.sync.monitor.ProgressMonitor;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.Thread.sleep;
 
+/**
+ * Task runner which executes tasks (non-concurrently) and reports the current progress to a progress monitor.
+ * The task result can be positive (result value returned) or negative (exception rethrown).
+ */
 public class TaskRunner {
 
     private final ProgressMonitor progressMonitor;
 
+    /**
+     * Create a task runner using the given progress monitor.
+     *
+     * @param progressMonitor progress monitor, required
+     */
     public TaskRunner(ProgressMonitor progressMonitor) {
         this.progressMonitor = progressMonitor;
     }
 
+    /**
+     * Run the given task
+     *
+     * @param task task, required
+     * @param <R>  task result
+     * @return task result, or rethrown exception if the task failed.
+     */
     public <R> R run(Task<R> task) {
-
+        progressMonitor.start(task.getName());
         ExecutionResult<R> result = new ExecutionResult<>();
         Thread runner = new Thread(() -> {
             try {
                 R taskResult = task.run();
-                synchronized (result) {
+                synchronized (progressMonitor) {
+                    progressMonitor.done("done");
                     result.done(taskResult);
-                    progressMonitor.done(task.getName(), "done");
                 }
             } catch (Exception ex) {
-                synchronized (result) {
+                synchronized (progressMonitor) {
+                    progressMonitor.done("failed: " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
                     result.done(ex);
-                    progressMonitor.done(task.getName(), "failed: " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
                 }
             }
         });
         Thread monitor = new Thread(() -> {
             try {
                 while (!result.isDone()) {
-                    synchronized (result) {
+                    synchronized (progressMonitor) {
                         if (!result.isDone()) {
-                            progressMonitor.update(task.getName(), max(0, min(1, task.getProgress())), task.getMessage());
+                            progressMonitor.update(max(0, min(1, task.getProgress())), task.getMessage());
                         }
                     }
                 }
-                Thread.sleep(50);
+                sleep(100);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
         });
+        runner.setDaemon(true);
         monitor.setDaemon(true);
 
         runner.start();
