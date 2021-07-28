@@ -10,7 +10,7 @@
     <name>Idx Sync CLI</name>
 
     <properties>
-        <mainClassName>ch.frostnova.cli.idx.sync.Main</mainClassName>
+        <mainClassName>ch.frostnova.cli.idx.sync.IdxSync</mainClassName>
         <shadowJarBaseName>${project.artifactId}-shadow</shadowJarBaseName>
 
         <maven.compiler.source>11</maven.compiler.source>
@@ -21,7 +21,7 @@
         <mockitoVersion>2.23.4</mockitoVersion>
         <slf4jVersion>1.7.25</slf4jVersion>
         <logbackVersion>1.2.3</logbackVersion>
-				
+
     </properties>
 
     <build>

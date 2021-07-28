@@ -5,10 +5,18 @@ public final class ConsoleTools {
     private static final int BAR_SIZE = 40;
     private static final int MAX_SIZE = 120;
 
+    public static final String ANSI_RESET = "\u001b[0m";
+    public static final String ANSI_BOLD = "\u001b[1m";
+    public static final String ANSI_GRAY = "\u001b[90m";
+    public static final String ANSI_YELLOW = "\u001b[33m";
+    public static final String ANSI_GREEN = "\u001b[32m";
+    public static final String ANSI_BLUE = "\u001b[34m";
+    public static final String ANSI_CYAN = "\u001b[36m";
+
     private static final String CURSOR_START_LINE = "\u001b[1000D";
     private static final String CLEAR_FROM_CURSOR = "\u001b[0K";
-    private static final String LEFT_BRACKET = "\u001b[33m│";
-    private static final String RIGHT_BRACKET = "│\u001b[0m";
+    private static final String LEFT_BRACKET = ANSI_YELLOW + "│";
+    private static final String RIGHT_BRACKET = "│" + ANSI_RESET;
     private static final char ELLIPSIS = '…';
     private static final char PROGRESS_BLOCK = '█';
     private static final String PROGRESS_FRACTIONS = " ▏▎▍▌▋▊▉█";
@@ -43,6 +51,10 @@ public final class ConsoleTools {
         line += clip(message, MAX_SIZE - printableSize(line));
         line += " ".repeat(MAX_SIZE - printableSize(line));
         System.out.printf("\r%s%s", line, CLEAR_FROM_CURSOR);
+    }
+
+    public static void printDone(String task, String message) {
+        System.out.println(CURSOR_START_LINE + CLEAR_FROM_CURSOR + ANSI_BOLD + task + ANSI_RESET + ": " + message);
     }
 
     public static int printableSize(String text) {

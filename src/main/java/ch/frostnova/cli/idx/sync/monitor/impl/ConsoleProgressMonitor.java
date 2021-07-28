@@ -1,45 +1,36 @@
-package ch.frostnova.cli.idx.sync.console;
+package ch.frostnova.cli.idx.sync.monitor.impl;
 
+import ch.frostnova.cli.idx.sync.monitor.ProgressMonitor;
+import ch.frostnova.cli.idx.sync.util.TimeFormat;
+
+import static ch.frostnova.cli.idx.sync.console.ConsoleTools.printDone;
 import static ch.frostnova.cli.idx.sync.console.ConsoleTools.printProgress;
 import static ch.frostnova.cli.idx.sync.util.TimeFormat.formatTime;
 
-public class ConsoleProgressBar implements AutoCloseable {
+/**
+ * Console implementation of a progress monitor.
+ */
+public class ConsoleProgressMonitor implements ProgressMonitor {
 
-    private final Thread progressUpdater;
-    private final String taskName;
-    private volatile boolean active = true;
     private volatile long startTimeSystemNs;
 
     private volatile long lastProgressTimeNs;
     private volatile double progress;
-    private volatile String message;
     private volatile double movingAverageProgressPerNs;
     private volatile long etaTimeNs;
 
-    public ConsoleProgressBar(String taskName) {
-        this.taskName = taskName;
+
+    public ConsoleProgressMonitor() {
         startTimeSystemNs = System.nanoTime();
         lastProgressTimeNs = startTimeSystemNs;
-        progressUpdater = new Thread(() -> {
-            while (active) {
-                printCurrentProgress();
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    return;
-                }
-            }
-        });
-        progressUpdater.setDaemon(true);
-        progressUpdater.start();
     }
 
-    public void setProgress(int i, int n, String message) {
-        setProgress((double) i / n, message);
-    }
+    @Override
+    public void update(String taskName, double progress, String message) {
 
-    public void setProgress(double progress, String message) {
         long nanoTimeNow = System.nanoTime();
+        double elapsedSec = 1e-9 * (nanoTimeNow - startTimeSystemNs);
+
         double deltaProgress = progress - this.progress;
         double elapsedTimeNs = (nanoTimeNow - startTimeSystemNs);
         double deltaTimeNs = (nanoTimeNow - lastProgressTimeNs);
@@ -55,18 +46,7 @@ public class ConsoleProgressBar implements AutoCloseable {
         }
         lastProgressTimeNs = nanoTimeNow;
         this.progress = progress;
-        this.message = message;
-    }
 
-    public void println(Object message) {
-        ConsoleTools.clearLine();
-        System.out.println(message);
-        printCurrentProgress();
-    }
-
-    private void printCurrentProgress() {
-        long nanoTimeNow = System.nanoTime();
-        double elapsedSec = 1e-9 * (nanoTimeNow - startTimeSystemNs);
         if (etaTimeNs > 0 && progress < 1) {
             double remainingSec = Math.max(0, etaTimeNs - nanoTimeNow) * 1e-9;
             printProgress(progress, taskName, String.format(" %s/%s %s", formatTime(elapsedSec), formatTime(remainingSec), message));
@@ -76,18 +56,11 @@ public class ConsoleProgressBar implements AutoCloseable {
     }
 
     @Override
-    public void close() {
-        if (!active) {
-            return;
-        }
-        active = false;
-        try {
-            progressUpdater.join();
-        } catch (InterruptedException ignored) {
-        }
-        progress = 1;
-        message = "";
-        printCurrentProgress();
-        System.out.println();
+    public void done(String taskName, String message) {
+
+        long nanoTimeNow = System.nanoTime();
+        double elapsedSec = 1e-9 * (nanoTimeNow - startTimeSystemNs);
+
+        printDone(taskName, message + " (in " + TimeFormat.formatTime(elapsedSec) + ")");
     }
 }

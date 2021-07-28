@@ -9,7 +9,7 @@ group = 'ch.frostnova.cli'
 version = '1.0.0-SNAPSHOT'
 
 ext {
-    mainClass = "ch.frostnova.cli.idx.sync.Main"
+    mainClass = "ch.frostnova.cli.idx.sync.IdxSync"
     shadowJarBaseName = project.name + "-shadow"
 
     dateTimeFormat = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")

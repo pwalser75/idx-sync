@@ -22,10 +22,7 @@ public class ObjectMappers {
 
     enum Type {
         JSON, //  JavaScript Object Notation
-        YAML, //  Yet Another Markup Language
-        XML, //  eXtensible Markup Language
-        PROPERTIES, // Java Properties format
-        CBOR // Concise Binary Object Representation (https://www.rfc-editor.org/info/rfc7049)
+        YAML //  Yet Another Markup Language
     }
 
     private static final Map<Type, ObjectMapper> objectMappers = new ConcurrentHashMap<>();
