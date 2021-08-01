@@ -5,11 +5,7 @@ import ch.frostnova.cli.idx.sync.SyncResult;
 import ch.frostnova.cli.idx.sync.task.Task;
 import ch.frostnova.cli.idx.sync.util.Invocation;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,9 +16,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-import static ch.frostnova.cli.idx.sync.SyncAction.CREATE;
-import static ch.frostnova.cli.idx.sync.SyncAction.DELETE;
-import static ch.frostnova.cli.idx.sync.SyncAction.UPDATE;
+import static ch.frostnova.cli.idx.sync.SyncAction.*;
 import static ch.frostnova.cli.idx.sync.util.Invocation.runUnchecked;
 import static java.util.stream.Collectors.summarizingDouble;
 import static java.util.stream.Collectors.summarizingLong;

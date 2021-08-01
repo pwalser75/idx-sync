@@ -10,15 +10,9 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
-import static ch.frostnova.cli.idx.sync.SyncAction.CREATE;
-import static ch.frostnova.cli.idx.sync.SyncAction.DELETE;
-import static ch.frostnova.cli.idx.sync.SyncAction.UPDATE;
+import static ch.frostnova.cli.idx.sync.SyncAction.*;
 import static ch.frostnova.cli.idx.sync.io.FileSystemUtil.traverse;
 import static ch.frostnova.cli.idx.sync.util.Invocation.runUnchecked;
 
@@ -55,10 +49,7 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
                 relativePaths.add(relativePath);
                 return true;
             }
-            if (Files.isDirectory(path) && skip) {
-                return false;
-            }
-            return true;
+            return !Files.isDirectory(path) || !skip;
         });
         traverse(syncJob.getTarget(), (path, progress) -> {
             this.progress = 0.25 + progress * 0.25;
@@ -69,10 +60,7 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
                 relativePaths.add(relativePath);
                 return true;
             }
-            if (Files.isDirectory(path) && skip) {
-                return false;
-            }
-            return true;
+            return !Files.isDirectory(path) || !skip;
         });
         int index = 0;
         for (Path relativePath : relativePaths) {
@@ -120,9 +108,6 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
         if (relativePath.equals(IdxSyncFile.FILENAME)) {
             return true;
         }
-        if (relativePath.equals(Path.of("$RECYCLE.BIN"))) {
-            return true;
-        }
-        return false;
+        return relativePath.equals(Path.of("$RECYCLE.BIN"));
     }
 }

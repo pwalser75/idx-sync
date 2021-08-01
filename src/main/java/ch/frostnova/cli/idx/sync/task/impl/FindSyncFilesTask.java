@@ -4,7 +4,6 @@ import ch.frostnova.cli.idx.sync.config.IdxSyncFile;
 import ch.frostnova.cli.idx.sync.config.ObjectMappers;
 import ch.frostnova.cli.idx.sync.task.Task;
 
-import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static ch.frostnova.cli.idx.sync.io.FileSystemUtil.traverseAll;
+import static ch.frostnova.cli.idx.sync.util.Invocation.runUnchecked;
 import static java.util.stream.Collectors.toSet;
 
 /**
@@ -33,7 +33,7 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
 
     @Override
     public Map<IdxSyncFile, Path> run() {
-        int maxRecurseDepth = 5;
+        int maxRecurseDepth = 6;
 
         Map<IdxSyncFile, Path> result = new HashMap<>();
 
@@ -48,21 +48,19 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
                 return false;
             }
 
-            if (Files.isRegularFile(path) && path.getFileName().equals(IdxSyncFile.FILENAME) && Files.isReadable(path)) {
+            if (Files.isRegularFile(path) && path.getFileName().equals(IdxSyncFile.FILENAME) && runUnchecked(() -> Files.isReadable(path))) {
                 try {
                     URL url = path.toUri().toURL();
                     IdxSyncFile syncFile = ObjectMappers.yaml().readValue(url, IdxSyncFile.class);
                     result.put(syncFile, path);
-                    return false;
+                    return true;
                 } catch (Exception ignored) {
                 }
             }
-
-            try {
-                return !Files.isHidden(path);
-            } catch (IOException ex) {
-                return false;
+            if (Files.isDirectory(path)) {
+                return runUnchecked(() -> !Files.isHidden(path));
             }
+            return true;
         });
         return result;
     }
