@@ -1,0 +1,33 @@
+<configuration>
+
+    <!-- console appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %replace(| %X{tenant}/%X{user} ){'\| / ',''}| %logger{50} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!-- rolling file appender: create one file per day, keep logs of last 30 days, max. 100 MB -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/idxsync.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/archive/test.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>100MB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <!--
+        <appender-ref ref="CONSOLE"/>
+        -->
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>

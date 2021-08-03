@@ -1,60 +1,67 @@
 package ch.frostnova.cli.idx.sync.monitor;
 
-import ch.frostnova.cli.idx.sync.util.TimeFormat;
+import static ch.frostnova.cli.idx.sync.util.TimeFormat.formatTime;
 
 /**
  * A progress timer which can report the elapsed and estimated remaining time.
  */
 public class ProgressTimer {
 
-    private long startTimeNs;
+    private final double SPEED_WEIGHT = 0.5;
+
+    private final long startTimeNs;
 
     private long etaEndTimeNs;
 
-    private double lastProgress;
-    private double lastProgressTimeNs;
     private double movingAverageProgressPerNs;
 
     public ProgressTimer() {
         this.startTimeNs = System.nanoTime();
-        lastProgress = 0;
-        lastProgressTimeNs = startTimeNs;
     }
 
     public void progress(double progress) {
         long nanoTimeNow = System.nanoTime();
-        double deltaProgress = progress - lastProgress;
-        double deltaTimeNs = nanoTimeNow - lastProgressTimeNs;
         double elapsedTimeNs = nanoTimeNow - startTimeNs;
+        double progressPerNs = elapsedTimeNs > 0 ? progress / elapsedTimeNs : 0;
 
-        double progressPerNs = deltaTimeNs > 0 ? deltaProgress / deltaTimeNs : 0;
-        double weight = deltaTimeNs / elapsedTimeNs;
-        movingAverageProgressPerNs = movingAverageProgressPerNs * (1 - weight) + progressPerNs * weight;
+        if (movingAverageProgressPerNs == 0) {
+            movingAverageProgressPerNs = progressPerNs;
+        } else {
+            movingAverageProgressPerNs = movingAverageProgressPerNs * SPEED_WEIGHT + progressPerNs * (1 - SPEED_WEIGHT);
+        }
         etaEndTimeNs = (long) (nanoTimeNow + (1 - progress) / movingAverageProgressPerNs);
+    }
 
-        lastProgress = progress;
-        lastProgressTimeNs = nanoTimeNow;
+    public double getElapsedTimeSec() {
+        long nanoTimeNow = System.nanoTime();
+        return (nanoTimeNow - startTimeNs) * 1e-9;
+    }
+
+    public double getRemainingTimeSec() {
+        long nanoTimeNow = System.nanoTime();
+        return Math.max(0, (etaEndTimeNs - nanoTimeNow) * 1e-9);
     }
 
     @Override
     public String toString() {
-        long nanoTimeNow = System.nanoTime();
-        double elapsedSec = (nanoTimeNow - startTimeNs) * 1e-9;
-        double remainingSec = (etaEndTimeNs - nanoTimeNow) * 1e-9;
-        if (etaEndTimeNs <= nanoTimeNow) {
-            return String.format("%s", TimeFormat.formatTime(elapsedSec));
+
+        double elapsedTimeSec = getElapsedTimeSec();
+        double remainingTimeSec = getRemainingTimeSec();
+
+        if (elapsedTimeSec < 1) {
+            return String.format("%s", formatTime(elapsedTimeSec));
         }
         int roundSeconds;
-        if (remainingSec > 90) {
+        if (remainingTimeSec > 90) {
             roundSeconds = 15;
-        } else if (remainingSec > 60) {
+        } else if (remainingTimeSec > 60) {
             roundSeconds = 10;
-        } else if (remainingSec > 15) {
+        } else if (remainingTimeSec > 15) {
             roundSeconds = 5;
         } else {
             roundSeconds = 1;
         }
-        remainingSec = roundSeconds * Math.round(remainingSec / roundSeconds);
-        return String.format("%s|%s", TimeFormat.formatTime(elapsedSec), TimeFormat.formatTime(remainingSec));
+        remainingTimeSec = roundSeconds * Math.round(remainingTimeSec / roundSeconds);
+        return String.format("%s|%s", formatTime(elapsedTimeSec), formatTime(remainingTimeSec));
     }
 }
