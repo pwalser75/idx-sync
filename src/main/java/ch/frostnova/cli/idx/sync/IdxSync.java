@@ -1,7 +1,6 @@
 package ch.frostnova.cli.idx.sync;
 
 import ch.frostnova.cli.idx.sync.config.IdxSyncFile;
-import ch.frostnova.cli.idx.sync.config.ObjectMappers;
 import ch.frostnova.cli.idx.sync.monitor.ProgressMonitor;
 import ch.frostnova.cli.idx.sync.monitor.impl.ConsoleProgressMonitor;
 import ch.frostnova.cli.idx.sync.task.BatchTask;
@@ -11,15 +10,18 @@ import ch.frostnova.cli.idx.sync.task.impl.FindSyncFilesTask;
 import ch.frostnova.cli.idx.sync.task.impl.SyncFilesTask;
 
 import java.io.Writer;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.Collator;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static ch.frostnova.cli.idx.sync.config.IdxSyncFile.FILENAME;
+import static ch.frostnova.cli.idx.sync.config.IdxSyncFile.resolve;
+import static ch.frostnova.cli.idx.sync.config.ObjectMappers.yaml;
 import static ch.frostnova.cli.idx.sync.console.AnsiEscape.*;
 import static ch.frostnova.cli.idx.sync.util.ByteFormat.formatBytes;
+import static java.nio.file.Files.*;
 import static java.util.Comparator.*;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
@@ -89,9 +91,9 @@ public class IdxSync {
 
         Map<IdxSyncFile, Path> syncFilePaths = taskRunner.run(new FindSyncFilesTask());
         if (syncFilePaths.isEmpty()) {
-            System.out.printf("No %s files found.\n", IdxSyncFile.FILENAME);
+            System.out.printf("No %s files found.\n", FILENAME);
         } else {
-            System.out.printf("Found following %s files:\n", IdxSyncFile.FILENAME);
+            System.out.printf("Found following %s files:\n", FILENAME);
             syncFilePaths.keySet().stream().sorted(syncFileComparator).forEach(syncFile -> {
                 Path path = syncFilePaths.get(syncFile);
                 if (syncFile.getSourceFolderId() != null) {
@@ -161,41 +163,41 @@ public class IdxSync {
                 "**/node-modules",
                 "**/.git"
         ).collect(Collectors.toSet()));
-        try (Writer writer = Files.newBufferedWriter(IdxSyncFile.resolve(path))) {
-            ObjectMappers.yaml().writeValue(writer, syncFile);
+        try (Writer writer = newBufferedWriter(resolve(path))) {
+            yaml().writeValue(writer, syncFile);
             System.out.println("Created .idxsync file in " + path + ", folder id: " + syncFile.getFolderId());
         }
     }
 
     private static void target(Path path, String sourceFolderId) throws Exception {
-        Files.createDirectories(path);
+        createDirectories(path);
         checkWriteableDir(path);
         IdxSyncFile syncFile = new IdxSyncFile();
         syncFile.setFolderId(UUID.randomUUID().toString());
         syncFile.setSourceFolderId(sourceFolderId);
-        try (Writer writer = Files.newBufferedWriter(IdxSyncFile.resolve(path))) {
-            ObjectMappers.yaml().writeValue(writer, syncFile);
+        try (Writer writer = newBufferedWriter(resolve(path))) {
+            yaml().writeValue(writer, syncFile);
             System.out.println("Created .idxsync file in " + path);
         }
     }
 
     private static void remove(Path path) throws Exception {
         checkWriteableDir(path);
-        Path syncFilePath = IdxSyncFile.resolve(path);
-        if (Files.exists(syncFilePath)) {
-            Files.delete(syncFilePath);
+        Path syncFilePath = resolve(path);
+        if (exists(syncFilePath)) {
+            delete(syncFilePath);
             System.out.println("Removed .idxsync file from " + path);
         }
     }
 
     private static void checkWriteableDir(Path path) {
-        if (!Files.exists(path)) {
+        if (!exists(path)) {
             throw new IllegalArgumentException(path + " does not exist");
         }
-        if (!Files.isDirectory(path)) {
+        if (!isDirectory(path)) {
             throw new IllegalArgumentException(path + " is not a directory");
         }
-        if (!Files.isWritable(path)) {
+        if (!isWritable(path)) {
             throw new IllegalArgumentException(path + " is not writeable");
         }
     }

@@ -1,15 +1,15 @@
 package ch.frostnova.cli.idx.sync.io;
 
-import ch.frostnova.cli.idx.sync.console.ConsoleTools;
-
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import static ch.frostnova.cli.idx.sync.console.ConsoleTools.clearLine;
+import static java.nio.file.Files.*;
+import static java.util.stream.Collectors.toList;
 
 public final class FileSystemUtil {
 
@@ -18,7 +18,7 @@ public final class FileSystemUtil {
     }
 
     public static void traverseAll(FileVisitor fileVisitor) {
-        List<Path> list = StreamSupport.stream(FileSystems.getDefault().getRootDirectories().spliterator(), false).collect(Collectors.toList());
+        List<Path> list = StreamSupport.stream(FileSystems.getDefault().getRootDirectories().spliterator(), false).collect(toList());
         int n = list.size();
         int index = 0;
         for (Path child : list) {
@@ -35,10 +35,10 @@ public final class FileSystemUtil {
 
     public static boolean traverse(Path path, FileVisitor fileVisitor, double progressLowerBound, double progressUpperBound) {
         boolean continueTraverse = fileVisitor.visit(path, progressLowerBound);
-        if (Files.isDirectory(path) && continueTraverse) {
+        if (isDirectory(path) && continueTraverse) {
             try {
-                if (!Files.isSymbolicLink(path)) {
-                    List<Path> list = Files.list(path).collect(Collectors.toList());
+                if (!isSymbolicLink(path)) {
+                    List<Path> list = list(path).collect(toList());
                     int n = list.size();
                     int index = 0;
                     for (Path child : list) {
@@ -52,7 +52,7 @@ public final class FileSystemUtil {
                 }
             } catch (AccessDeniedException ignored) {
             } catch (IOException ex) {
-                ConsoleTools.clearLine();
+                clearLine();
                 System.err.println(ex.getClass().getSimpleName() + ":" + ex.getMessage());
             }
         }

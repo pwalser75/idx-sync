@@ -3,9 +3,10 @@ package ch.frostnova.cli.idx.sync.monitor.impl;
 import ch.frostnova.cli.idx.sync.console.ConsoleProgressBar;
 import ch.frostnova.cli.idx.sync.monitor.ProgressMonitor;
 import ch.frostnova.cli.idx.sync.monitor.ProgressTimer;
-import ch.frostnova.cli.idx.sync.util.TimeFormat;
 
-import static ch.frostnova.cli.idx.sync.console.ProgressBarStyle.ansi;
+import static ch.frostnova.cli.idx.sync.console.ProgressBarStyle.autodetect;
+import static ch.frostnova.cli.idx.sync.util.TimeFormat.formatTime;
+import static java.lang.System.nanoTime;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -20,7 +21,7 @@ public class ConsoleProgressMonitor implements ProgressMonitor {
     private long startTimeSystemNs;
 
     public ConsoleProgressMonitor() {
-        this.consoleProgressBar = new ConsoleProgressBar(ansi());
+        this.consoleProgressBar = new ConsoleProgressBar(autodetect());
     }
 
     @Override
@@ -30,7 +31,7 @@ public class ConsoleProgressMonitor implements ProgressMonitor {
         }
         this.taskName = requireNonNull(taskName, "taskName is required");
         progressTimer = new ProgressTimer();
-        startTimeSystemNs = System.nanoTime();
+        startTimeSystemNs = nanoTime();
     }
 
     @Override
@@ -49,9 +50,9 @@ public class ConsoleProgressMonitor implements ProgressMonitor {
         }
         progressTimer = null;
 
-        long nanoTimeNow = System.nanoTime();
+        long nanoTimeNow = nanoTime();
         double elapsedSec = 1e-9 * (nanoTimeNow - startTimeSystemNs);
 
-        consoleProgressBar.printDone(taskName, message + " (in " + TimeFormat.formatTime(elapsedSec) + ")");
+        consoleProgressBar.printDone(taskName, message + " (in " + formatTime(elapsedSec) + ")");
     }
 }

@@ -1,5 +1,7 @@
 package ch.frostnova.cli.idx.sync.util;
 
+import static java.lang.String.format;
+
 public final class TimeFormat {
     private TimeFormat() {
 
@@ -12,8 +14,8 @@ public final class TimeFormat {
         long h = min / 60;
         min %= 60;
         if (h > 0) {
-            return String.format("%02d:%02d:%02d", h, min, sec);
+            return format("%02d:%02d:%02d", h, min, sec);
         }
-        return String.format("%02d:%02d", min, sec);
+        return format("%02d:%02d", min, sec);
     }
 }

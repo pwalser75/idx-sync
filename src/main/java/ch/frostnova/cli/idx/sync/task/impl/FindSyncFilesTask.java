@@ -1,11 +1,9 @@
 package ch.frostnova.cli.idx.sync.task.impl;
 
 import ch.frostnova.cli.idx.sync.config.IdxSyncFile;
-import ch.frostnova.cli.idx.sync.config.ObjectMappers;
 import ch.frostnova.cli.idx.sync.task.Task;
 
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -13,8 +11,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static ch.frostnova.cli.idx.sync.config.IdxSyncFile.FILENAME;
+import static ch.frostnova.cli.idx.sync.config.ObjectMappers.yaml;
 import static ch.frostnova.cli.idx.sync.io.FileSystemUtil.traverseAll;
 import static ch.frostnova.cli.idx.sync.util.Invocation.runUnchecked;
+import static java.nio.file.Files.*;
 import static java.util.stream.Collectors.toSet;
 
 /**
@@ -22,7 +23,7 @@ import static java.util.stream.Collectors.toSet;
  */
 public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
 
-    private final static Set<Path> ignored = Stream.of("/dev", "/proc").map(Paths::get).collect(toSet());
+    private final static Set<Path> ignored = Stream.of("/bin", "/dev", "/proc").map(Paths::get).collect(toSet());
     private double progress;
     private String message;
 
@@ -48,17 +49,18 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
                 return false;
             }
 
-            if (Files.isRegularFile(path) && path.getFileName().equals(IdxSyncFile.FILENAME) && runUnchecked(() -> Files.isReadable(path))) {
+            if (isRegularFile(path) && path.getFileName().equals(FILENAME) && runUnchecked(() -> isReadable(path))) {
                 try {
                     URL url = path.toUri().toURL();
-                    IdxSyncFile syncFile = ObjectMappers.yaml().readValue(url, IdxSyncFile.class);
+                    IdxSyncFile syncFile = yaml().readValue(url, IdxSyncFile.class);
                     result.put(syncFile, path);
                     return true;
                 } catch (Exception ignored) {
+                    
                 }
             }
-            if (Files.isDirectory(path)) {
-                return runUnchecked(() -> !Files.isHidden(path));
+            if (isDirectory(path)) {
+                return runUnchecked(() -> !isHidden(path));
             }
             return true;
         });

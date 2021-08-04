@@ -1,10 +1,23 @@
 package ch.frostnova.cli.idx.sync.console;
 
+import ch.frostnova.cli.idx.sync.util.Invocation;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+
+import java.nio.charset.StandardCharsets;
+
 import static ch.frostnova.cli.idx.sync.console.AnsiEscape.*;
 
 public final class ConsoleTools {
 
     private static final char ELLIPSIS = '…';
+
+    private static final Terminal terminal;
+
+    static {
+        terminal = Invocation.runUnchecked(() ->
+                TerminalBuilder.builder().color(true).encoding(StandardCharsets.UTF_8).build());
+    }
 
     private ConsoleTools() {
     }
@@ -32,5 +45,9 @@ public final class ConsoleTools {
             text = text.substring(0, text.length() - 1);
         }
         return text + ELLIPSIS;
+    }
+
+    public static int getLineLength() {
+        return Math.max(60, terminal.getWidth());
     }
 }

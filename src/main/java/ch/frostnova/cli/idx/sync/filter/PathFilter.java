@@ -1,9 +1,10 @@
 package ch.frostnova.cli.idx.sync.filter;
 
 import java.nio.file.Path;
-import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+
+import static java.util.UUID.randomUUID;
 
 /**
  * A filter matching {@link Path}s by ant-style wildcard patterns:
@@ -24,9 +25,9 @@ public class PathFilter implements Predicate<Path> {
     private final Pattern pattern;
 
     public PathFilter(String antWildcardPattern) {
-        String placeholderAnyPathSequence = UUID.randomUUID().toString();
-        String placeholderAnyCharSequence = UUID.randomUUID().toString();
-        String placeholderAnyChar = UUID.randomUUID().toString();
+        String placeholderAnyPathSequence = randomUUID().toString();
+        String placeholderAnyCharSequence = randomUUID().toString();
+        String placeholderAnyChar = randomUUID().toString();
 
         String regex = escape(antWildcardPattern
                 .replace("**/", placeholderAnyPathSequence)

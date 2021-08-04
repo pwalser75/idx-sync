@@ -5,7 +5,6 @@ import ch.frostnova.cli.idx.sync.SyncJob;
 import ch.frostnova.cli.idx.sync.config.IdxSyncFile;
 import ch.frostnova.cli.idx.sync.task.Task;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
@@ -15,6 +14,8 @@ import java.util.*;
 import static ch.frostnova.cli.idx.sync.SyncAction.*;
 import static ch.frostnova.cli.idx.sync.io.FileSystemUtil.traverse;
 import static ch.frostnova.cli.idx.sync.util.Invocation.runUnchecked;
+import static java.nio.file.Files.*;
+import static java.time.Duration.between;
 
 /**
  * Task which scans the file system for {@link IdxSyncFile}s.
@@ -45,22 +46,22 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
             this.message = path.toString();
             Path relativePath = syncJob.getSource().relativize(path);
             boolean skip = skip(relativePath);
-            if (!runUnchecked(() -> Files.isHidden(path)) && !skip) {
+            if (!runUnchecked(() -> isHidden(path)) && !skip) {
                 relativePaths.add(relativePath);
                 return true;
             }
-            return !Files.isDirectory(path) || !skip;
+            return !isDirectory(path) || !skip;
         });
         traverse(syncJob.getTarget(), (path, progress) -> {
             this.progress = 0.25 + progress * 0.25;
             this.message = path.toString();
             Path relativePath = syncJob.getTarget().relativize(path);
             boolean skip = skip(relativePath);
-            if (!runUnchecked(() -> Files.isHidden(path)) && !skip) {
+            if (!runUnchecked(() -> isHidden(path)) && !skip) {
                 relativePaths.add(relativePath);
                 return true;
             }
-            return !Files.isDirectory(path) || !skip;
+            return !isDirectory(path) || !skip;
         });
         int index = 0;
         for (Path relativePath : relativePaths) {
@@ -68,20 +69,20 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
             this.message = relativePath.toString();
             Path sourcePath = syncJob.getSource().resolve(relativePath);
             Path targetPath = syncJob.getTarget().resolve(relativePath);
-            if (!Files.exists(targetPath) && Files.isRegularFile(sourcePath) && Files.isReadable(sourcePath)) {
-                result.add(new FileSyncJob(sourcePath, targetPath, CREATE, runUnchecked(() -> Files.size(sourcePath))));
-            } else if (!Files.exists(sourcePath)) {
+            if (!exists(targetPath) && isRegularFile(sourcePath) && isReadable(sourcePath)) {
+                result.add(new FileSyncJob(sourcePath, targetPath, CREATE, runUnchecked(() -> size(sourcePath))));
+            } else if (!exists(sourcePath)) {
                 result.add(new FileSyncJob(sourcePath, targetPath, DELETE));
-            } else if (Files.isRegularFile(sourcePath) && Files.isReadable(sourcePath)) {
-                Long sourceFileSize = runUnchecked(() -> Files.size(sourcePath));
-                Long targetFileSize = runUnchecked(() -> Files.size(targetPath));
+            } else if (isRegularFile(sourcePath) && isReadable(sourcePath)) {
+                Long sourceFileSize = runUnchecked(() -> size(sourcePath));
+                Long targetFileSize = runUnchecked(() -> size(targetPath));
 
-                BasicFileAttributes sourceAttributes = runUnchecked(() -> Files.readAttributes(sourcePath, BasicFileAttributes.class));
-                BasicFileAttributes targetAttributes = runUnchecked(() -> Files.readAttributes(targetPath, BasicFileAttributes.class));
+                BasicFileAttributes sourceAttributes = runUnchecked(() -> readAttributes(sourcePath, BasicFileAttributes.class));
+                BasicFileAttributes targetAttributes = runUnchecked(() -> readAttributes(targetPath, BasicFileAttributes.class));
 
                 Instant sourceLastModified = sourceAttributes.lastModifiedTime().toInstant();
                 Instant targetLastModified = targetAttributes.lastModifiedTime().toInstant();
-                Duration deltaTime = Duration.between(sourceLastModified, targetLastModified);
+                Duration deltaTime = between(sourceLastModified, targetLastModified);
 
                 if (!Objects.equals(sourceFileSize, targetFileSize) || deltaTime.compareTo(Duration.ofSeconds(1)) > 0) {
                     String info = String.format("%s: %s?=%s, %s?=%s, %s", relativePath,

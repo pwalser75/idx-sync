@@ -21,6 +21,7 @@ ext {
     mockitoVersion = '3.11.+'
     slf4jVersion = '1.7.+'
     logbackVersion = '1.2.3'
+    jLineVersion = '2.14.2'
 
     libs = [
             jackson    : [
@@ -35,6 +36,9 @@ ext {
                     "org.slf4j:jcl-over-slf4j:${slf4jVersion}",
                     "org.slf4j:jul-to-slf4j:${slf4jVersion}",
                     "ch.qos.logback:logback-classic:${logbackVersion}"
+            ],
+            jLine      : [
+                    "jline:jline:${jLineVersion}"
             ],
             testBase   : [
                     "org.junit.jupiter:junit-jupiter-api:${junitVersion}",

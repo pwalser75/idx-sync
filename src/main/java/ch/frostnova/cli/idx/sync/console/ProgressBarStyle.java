@@ -1,9 +1,11 @@
 package ch.frostnova.cli.idx.sync.console;
 
-public class ProgressBarStyle {
+import java.util.Locale;
 
-    private final int lineLength;
-    private final int barLength;
+import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_RESET;
+import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_YELLOW;
+
+public class ProgressBarStyle {
 
     private final String leftBracket;
     private final String rightBracket;
@@ -11,7 +13,11 @@ public class ProgressBarStyle {
     private final String progressFractions;
 
     public static void main(String[] args) {
-        ProgressBarStyle style = ProgressBarStyle.ansi();
+
+        System.getProperties().forEach((k, v) -> System.out.println(k + " = " + v));
+
+
+        ProgressBarStyle style = ProgressBarStyle.autodetect();
         ConsoleProgressBar consoleProgressBar = new ConsoleProgressBar(style);
         int n = 531;
         for (int i = 0; i <= n; i++) {
@@ -24,33 +30,27 @@ public class ProgressBarStyle {
         consoleProgressBar.printDone("Test", "done");
     }
 
-    public ProgressBarStyle(int lineLength, int barLength, String leftBracket, String rightBracket, char progressBlock, String progressFractions) {
-        this.lineLength = lineLength;
-        this.barLength = barLength;
+    public ProgressBarStyle(String leftBracket, String rightBracket, char progressBlock, String progressFractions) {
         this.leftBracket = leftBracket;
         this.rightBracket = rightBracket;
         this.progressBlock = progressBlock;
         this.progressFractions = progressFractions;
     }
 
+    public static ProgressBarStyle autodetect() {
+        String operatingSystem = System.getProperty("os.name", "unknown").toLowerCase(Locale.ROOT);
+        if (operatingSystem.contains("linux") || operatingSystem.contains("unix") || operatingSystem.contains("mac")) {
+            return ansi();
+        }
+        return plain();
+    }
+
     public static ProgressBarStyle ansi() {
-        return new ProgressBarStyle(160, 40,
-                AnsiEscape.ANSI_YELLOW + "│", "│" + AnsiEscape.ANSI_RESET,
-                '█', " ▏▎▍▌▋▊▉█");
+        return new ProgressBarStyle(ANSI_YELLOW + "│", "│" + ANSI_RESET, '█', " ▏▎▍▌▋▊▉█");
     }
 
     public static ProgressBarStyle plain() {
-        return new ProgressBarStyle(160, 32,
-                "[", "]",
-                '#', " ");
-    }
-
-    public int getLineLength() {
-        return lineLength;
-    }
-
-    public int getBarLength() {
-        return barLength;
+        return new ProgressBarStyle("[", "]", '#', " ");
     }
 
     public String getLeftBracket() {

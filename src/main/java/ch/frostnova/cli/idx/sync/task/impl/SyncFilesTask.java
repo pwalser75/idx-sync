@@ -18,6 +18,8 @@ import java.util.Objects;
 
 import static ch.frostnova.cli.idx.sync.SyncAction.*;
 import static ch.frostnova.cli.idx.sync.util.Invocation.runUnchecked;
+import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.Files.*;
 import static java.util.stream.Collectors.summarizingDouble;
 import static java.util.stream.Collectors.summarizingLong;
 
@@ -68,9 +70,9 @@ public class SyncFilesTask implements Task<SyncResult> {
                 if (fileSyncJob.getSyncAction() == CREATE || fileSyncJob.getSyncAction() == UPDATE) {
                     long fileSize = fileSyncJob.getFileSize();
                     long transferred = 0;
-                    Files.createDirectories(fileSyncJob.getTargetPath().getParent());
-                    try (InputStream in = new BufferedInputStream(Files.newInputStream(fileSyncJob.getSourcePath()))) {
-                        try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(fileSyncJob.getTargetPath()))) {
+                    createDirectories(fileSyncJob.getTargetPath().getParent());
+                    try (InputStream in = new BufferedInputStream(newInputStream(fileSyncJob.getSourcePath()))) {
+                        try (OutputStream out = new BufferedOutputStream(newOutputStream(fileSyncJob.getTargetPath()))) {
                             int read;
                             while ((read = in.read(buffer)) >= 0) {
                                 out.write(buffer, 0, read);
@@ -81,8 +83,8 @@ public class SyncFilesTask implements Task<SyncResult> {
                         }
                     }
                     bytesTransferred += transferred;
-                    BasicFileAttributes sourceAttributes = runUnchecked(() -> Files.readAttributes(fileSyncJob.getSourcePath(), BasicFileAttributes.class));
-                    Files.setLastModifiedTime(fileSyncJob.getTargetPath(), sourceAttributes.lastModifiedTime());
+                    BasicFileAttributes sourceAttributes = runUnchecked(() -> readAttributes(fileSyncJob.getSourcePath(), BasicFileAttributes.class));
+                    setLastModifiedTime(fileSyncJob.getTargetPath(), sourceAttributes.lastModifiedTime());
                     if (fileSyncJob.getSyncAction() == CREATE) {
                         filesCreated++;
                     } else {
@@ -116,21 +118,21 @@ public class SyncFilesTask implements Task<SyncResult> {
     }
 
     private static void delete(Path path) {
-        if (!Files.exists(path)) {
+        if (!exists(path)) {
             return;
         }
         Invocation.runUnchecked(() -> {
-            Files.walkFileTree(path, new SimpleFileVisitor<>() {
+            walkFileTree(path, new SimpleFileVisitor<>() {
                 @Override
                 public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
                     Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
+                    return CONTINUE;
                 }
 
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     Files.delete(file);
-                    return FileVisitResult.CONTINUE;
+                    return CONTINUE;
                 }
             });
         });

@@ -12,6 +12,8 @@ import static java.lang.Thread.sleep;
  */
 public class TaskRunner {
 
+    private static final int MONITOR_INTERVAL_MS = 100;
+
     private final ProgressMonitor progressMonitor;
 
     /**
@@ -55,8 +57,8 @@ public class TaskRunner {
                             progressMonitor.update(max(0, min(1, task.getProgress())), task.getMessage());
                         }
                     }
+                    sleep(MONITOR_INTERVAL_MS);
                 }
-                sleep(100);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
