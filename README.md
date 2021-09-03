@@ -2,7 +2,7 @@
 
 (!) Incubation project - not yet reliable.
 
-![](./screenshot.png)
+![](./idx-sync-animated.gif)
 
 ## Description
 

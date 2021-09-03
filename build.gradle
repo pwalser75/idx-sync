@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id "com.github.ben-manes.versions" version "0.39.0"
-    id "com.github.johnrengelman.shadow" version "6.0.0"
+    id "com.github.johnrengelman.shadow" version "7.0.0"
 }
 
 description = 'Idx Sync CLI'
@@ -15,13 +15,13 @@ ext {
     dateTimeFormat = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     buildDate = java.time.LocalDateTime.now()
 
-    jacksonVersion = '2.11.+'
+    jacksonVersion = '2.12.+'
     junitVersion = '5.7.+'
     assertjVersion = '3.16.+'
-    mockitoVersion = '3.11.+'
+    mockitoVersion = '3.12.+'
     slf4jVersion = '1.7.+'
-    logbackVersion = '1.2.3'
-    jLineVersion = '2.14.2'
+    logbackVersion = '1.2.+'
+    jLineVersion = '2.14.+'
 
     libs = [
             jackson    : [
