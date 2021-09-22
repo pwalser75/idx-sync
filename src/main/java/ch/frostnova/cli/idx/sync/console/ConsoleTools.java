@@ -6,7 +6,9 @@ import org.jline.terminal.TerminalBuilder;
 
 import java.nio.charset.StandardCharsets;
 
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.*;
+import static ch.frostnova.cli.idx.sync.console.AnsiEscape.CLEAR_FROM_CURSOR;
+import static ch.frostnova.cli.idx.sync.console.AnsiEscape.CURSOR_START_LINE;
+import static ch.frostnova.cli.idx.sync.console.AnsiEscape.format;
 
 public final class ConsoleTools {
 

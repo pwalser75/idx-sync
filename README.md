@@ -26,7 +26,7 @@ If you run it with an unknown command (e.g. `help`) or the incorrect number of a
 information:
 
 ```bash
-java -jar idx-sync-shadow.jar help
+java -jar idx-sync.jar help
 ```
 
 ![](./usage.png)
