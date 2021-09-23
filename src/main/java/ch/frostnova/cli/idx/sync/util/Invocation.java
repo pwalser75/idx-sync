@@ -53,12 +53,14 @@ public final class Invocation {
          * Functional contract
          *
          * @return return value
-         * @throws Exception optional exception
+         * @throws Throwable optional throwable
          */
         T supply() throws Throwable;
 
         /**
          * Unchecked execution: execute checked and rethrow any exception as {@link RuntimeException}.
+         *
+         * @return return value
          */
         default T supplyUnchecked() {
             try {

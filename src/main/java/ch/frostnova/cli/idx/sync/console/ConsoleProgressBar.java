@@ -18,7 +18,7 @@ public class ConsoleProgressBar {
     public void printProgress(double progress, String task, String message) {
 
         int lineLength = getLineLength();
-        int barLength = Math.max(5, lineLength * 4 / 10);
+        int barLength = Math.max(5, lineLength * 3 / 10);
 
         task = task != null ? removeNonPrintableCharacters(task) : "";
         message = message != null ? removeNonPrintableCharacters(message) : "";
@@ -36,11 +36,15 @@ public class ConsoleProgressBar {
 
         String line = task + progressBar;
         line += clip(message, lineLength - printableSize(line));
-        line += " ".repeat(lineLength - printableSize(line));
-        System.out.printf("\r%s%s", line, CLEAR_FROM_CURSOR);
+        line += " ".repeat(Math.max(0, lineLength - printableSize(line)));
+        System.out.printf("\r%s", line);
     }
 
     public void printDone(String task, String message) {
-        System.out.println(format(task, CURSOR_START_LINE, CLEAR_FROM_CURSOR, ANSI_BOLD) + ": " + message);
+        if (isModern()) {
+            System.out.println(format(task, CURSOR_START_LINE, CLEAR_FROM_CURSOR, ANSI_BOLD) + ": " + message);
+        } else {
+            System.out.printf("\r%s\r%s: %s\n", " ".repeat(getLineLength()), task, message);
+        }
     }
 }

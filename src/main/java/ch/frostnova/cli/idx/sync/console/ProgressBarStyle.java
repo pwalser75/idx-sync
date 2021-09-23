@@ -13,10 +13,6 @@ public class ProgressBarStyle {
     private final String progressFractions;
 
     public static void main(String[] args) {
-
-        System.getProperties().forEach((k, v) -> System.out.println(k + " = " + v));
-
-
         ProgressBarStyle style = ProgressBarStyle.autodetect();
         ConsoleProgressBar consoleProgressBar = new ConsoleProgressBar(style);
         int n = 531;
@@ -46,7 +42,7 @@ public class ProgressBarStyle {
     }
 
     public static ProgressBarStyle ansi() {
-        return new ProgressBarStyle(ANSI_YELLOW + "│", "│" + ANSI_RESET, '█', " ▏▎▍▌▋▊▉█");
+        return new ProgressBarStyle(ANSI_YELLOW + "│", "│" + ANSI_RESET, '\u2588', " \u258F\u258E\u258D\u258C\u258B\u258A\u2589\u2588");
     }
 
     public static ProgressBarStyle plain() {

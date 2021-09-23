@@ -20,6 +20,7 @@ public interface Task<R> {
      * Executes the task. The task is considered running once this method is called until it terminates.x
      *
      * @return R task execution result.
+     * @throws Exception any exception
      */
     R run() throws Exception;
 

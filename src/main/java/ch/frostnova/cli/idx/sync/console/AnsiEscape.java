@@ -3,6 +3,7 @@ package ch.frostnova.cli.idx.sync.console;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static ch.frostnova.cli.idx.sync.console.ConsoleTools.isModern;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 
@@ -38,12 +39,20 @@ public enum AnsiEscape {
     /**
      * Format a text using the given styles
      *
-     * @param text  text
-     * @param style styles to apply
+     * @param object object
+     * @param style  styles to apply
      * @return ansi-formatted text
      */
-    public static String format(Object text, AnsiEscape... style) {
+    public static String format(Object object, AnsiEscape... style) {
+        String text = String.valueOf(object);
+        if (!isModern()) {
+            return text;
+        }
         return stream(style).map(AnsiEscape::getEscapeSequence).collect(joining()) + Optional.ofNullable(text).orElse("") + ANSI_RESET;
+    }
+
+    private static String removeAnsiEscapes(String text) {
+        return text.replaceAll("\u001B\\[[;\\d]*m", "");
     }
 
     @Override

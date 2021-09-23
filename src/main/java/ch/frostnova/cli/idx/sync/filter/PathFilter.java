@@ -52,7 +52,6 @@ public class PathFilter implements Predicate<Path> {
 
     @Override
     public boolean test(Path path) {
-        System.out.println("Testing: " + path);
-        return pattern.matcher(path.toString()).matches();
+        return pattern.matcher(path.toString().replace('\\', '/')).matches();
     }
 }

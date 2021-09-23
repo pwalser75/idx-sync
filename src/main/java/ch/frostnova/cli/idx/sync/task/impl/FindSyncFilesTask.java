@@ -38,6 +38,8 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
 
         Map<IdxSyncFile, Path> result = new HashMap<>();
 
+        //TODO: could use DirectoryStream for faster traversal, but then progress could not be tracked.
+        // Idea: use DirectoryStream at depth 3+
         traverseAll((path, progress) -> {
             this.progress = progress;
             this.message = path.toString();
@@ -56,11 +58,11 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
                     result.put(syncFile, path);
                     return true;
                 } catch (Exception ignored) {
-                    
+
                 }
             }
             if (isDirectory(path)) {
-                return runUnchecked(() -> !isHidden(path));
+                return runUnchecked(() -> path.getParent() == null || !isHidden(path));
             }
             return true;
         });

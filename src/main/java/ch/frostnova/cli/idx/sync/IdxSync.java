@@ -20,6 +20,7 @@ import static ch.frostnova.cli.idx.sync.config.IdxSyncFile.FILENAME;
 import static ch.frostnova.cli.idx.sync.config.IdxSyncFile.resolve;
 import static ch.frostnova.cli.idx.sync.config.ObjectMappers.yaml;
 import static ch.frostnova.cli.idx.sync.console.AnsiEscape.*;
+import static ch.frostnova.cli.idx.sync.console.ConsoleTools.*;
 import static ch.frostnova.cli.idx.sync.util.ByteFormat.formatBytes;
 import static java.nio.file.Files.*;
 import static java.util.Comparator.*;
@@ -58,9 +59,9 @@ public class IdxSync {
                     printUsage();
                 }
             } catch (IllegalArgumentException ex) {
-                System.out.printf("❌ %s: %s", ex.getClass().getSimpleName(), ex.getMessage());
+                System.out.printf("%s %s: %s", error(), ex.getClass().getSimpleName(), ex.getMessage());
             } catch (Exception ex) {
-                System.out.printf("❌ %s: %s", ex.getClass().getSimpleName(), ex.getMessage());
+                System.out.printf("%s %s: %s", error(), ex.getClass().getSimpleName(), ex.getMessage());
                 ex.printStackTrace();
             }
         }
@@ -68,7 +69,7 @@ public class IdxSync {
 
     private static void printLogo() {
         System.out.println(format("------------", ANSI_BLUE));
-        System.out.println(format("\uD83D\uDE80 Idx SYNC", ANSI_BOLD, ANSI_BLUE));
+        System.out.println(format(rocket() + " Idx SYNC", ANSI_BOLD, ANSI_BLUE));
         System.out.println(format("------------", ANSI_BOLD, ANSI_BLUE));
     }
 
@@ -97,9 +98,9 @@ public class IdxSync {
             syncFilePaths.keySet().stream().sorted(syncFileComparator).forEach(syncFile -> {
                 Path path = syncFilePaths.get(syncFile);
                 if (syncFile.getSourceFolderId() != null) {
-                    System.out.printf("- \uD83D\uDD04 %s: source = %s in %s\n", format(syncFile.getFolderId(), ANSI_BOLD, ANSI_CYAN), format(syncFile.getSourceFolderId(), ANSI_CYAN), path.getParent());
+                    System.out.printf("- %s %s: source = %s in %s\n", sync(), format(syncFile.getFolderId(), ANSI_BOLD, ANSI_CYAN), format(syncFile.getSourceFolderId(), ANSI_CYAN), path.getParent());
                 } else {
-                    System.out.printf("- \uD83D\uDD04 %s: %s, in %s\n", format(syncFile.getFolderId(), ANSI_BOLD, ANSI_CYAN), format(syncFile.getFolderName(), ANSI_CYAN), path.getParent());
+                    System.out.printf("- %s %s: %s, in %s\n", sync(), format(syncFile.getFolderId(), ANSI_BOLD, ANSI_CYAN), format(syncFile.getFolderName(), ANSI_CYAN), path.getParent());
                 }
             });
         }
@@ -117,7 +118,7 @@ public class IdxSync {
             System.out.println("Matching sync folders found:");
             syncSourceTarget.keySet().stream().sorted(syncFileComparator).forEach(target -> {
                 IdxSyncFile source = syncSourceTarget.get(target);
-                System.out.printf("- ✅ %s %s -> %s\n", format(source.getFolderName(), ANSI_BOLD, ANSI_GREEN), syncFilePaths.get(source).getParent(), syncFilePaths.get(target).getParent());
+                System.out.printf("- %s %s %s -> %s\n", check(), format(source.getFolderName(), ANSI_BOLD, ANSI_GREEN), syncFilePaths.get(source).getParent(), syncFilePaths.get(target).getParent());
                 result.add(new SyncJob(source.getFolderName(), syncFilePaths.get(source).getParent(), syncFilePaths.get(target).getParent()));
             });
         }
