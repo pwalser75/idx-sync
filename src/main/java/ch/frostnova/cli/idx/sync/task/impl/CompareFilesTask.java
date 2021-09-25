@@ -9,13 +9,8 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static ch.frostnova.cli.idx.sync.SyncAction.CREATE;
 import static ch.frostnova.cli.idx.sync.SyncAction.DELETE;
@@ -33,13 +28,13 @@ import static java.time.Duration.between;
 /**
  * Task which scans the file system for {@link IdxSyncFile}s.
  */
-public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
+public class CompareFilesTask implements Task<List<FileSyncJob>> {
 
     private final SyncJob syncJob;
     private double progress;
     private String message;
 
-    public CreateFileSyncJobsTask(SyncJob syncJob) {
+    public CompareFilesTask(SyncJob syncJob) {
         this.syncJob = syncJob;
     }
 
@@ -81,7 +76,8 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
             return !isDirectory(path) || !skip;
         });
         int index = 0;
-        for (Path relativePath : relativePaths) {
+        List<Path> sortedPaths = relativePaths.stream().sorted().collect(Collectors.toList());
+        for (Path relativePath : sortedPaths) {
             this.progress = 0.5 + (double) index / relativePaths.size() * 0.5;
             this.message = relativePath.toString();
             Path sourcePath = sourcePaths.get(relativePath);

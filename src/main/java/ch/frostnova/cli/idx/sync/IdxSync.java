@@ -6,7 +6,7 @@ import ch.frostnova.cli.idx.sync.monitor.ProgressMonitor;
 import ch.frostnova.cli.idx.sync.monitor.impl.ConsoleProgressMonitor;
 import ch.frostnova.cli.idx.sync.task.BatchTask;
 import ch.frostnova.cli.idx.sync.task.TaskRunner;
-import ch.frostnova.cli.idx.sync.task.impl.CreateFileSyncJobsTask;
+import ch.frostnova.cli.idx.sync.task.impl.CompareFilesTask;
 import ch.frostnova.cli.idx.sync.task.impl.FindSyncFilesTask;
 import ch.frostnova.cli.idx.sync.task.impl.SyncFilesTask;
 
@@ -131,7 +131,7 @@ public class IdxSync {
 
         List<SyncJob> syncJobs = scan();
 
-        BatchTask<List<FileSyncJob>> batchTask = new BatchTask<>("Comparing files", syncJobs.stream().map(CreateFileSyncJobsTask::new).collect(toList()));
+        BatchTask<List<FileSyncJob>> batchTask = new BatchTask<>("Comparing files", syncJobs.stream().map(CompareFilesTask::new).collect(toList()));
         List<FileSyncJob> fileSyncJobs = taskRunner.run(batchTask).stream().flatMap(Collection::stream).collect(toList());
 
         SyncResult syncResult = taskRunner.run(new SyncFilesTask(fileSyncJobs));

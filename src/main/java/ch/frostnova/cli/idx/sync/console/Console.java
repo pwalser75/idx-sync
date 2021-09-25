@@ -77,7 +77,7 @@ public final class Console {
         if (length < 1) {
             return "";
         }
-        if (printableSize(text) < length) {
+        if (printableSize(text) <= length) {
             return text;
         }
         while (printableSize(text) > length - elipsisSize && text.length() > 0) {
