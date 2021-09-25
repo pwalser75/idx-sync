@@ -11,7 +11,7 @@ public final class ConsoleTools {
     /**
      * Hard to get for different consoles and console windows sizes - as for now, we're using a static value.
      */
-    private final static int LINE_LENGTH = 76;
+    private final static int LINE_LENGTH = 116;
 
     private ConsoleTools() {
     }

@@ -33,19 +33,18 @@ public class ProgressTimer {
 
     public void progress(double progress) {
         long nanoTimeNow = nanoTime();
-        if (progress < lastProgress + 0.05) {
-            return;
-        }
-
         double deltaProgress = progress - lastProgress;
         long deltaTimeNs = nanoTimeNow - lastProgressTime;
 
-        lastProgressSamples.add(deltaProgress / deltaTimeNs);
-        double averageProgress = lastProgressSamples.stream().collect(averagingDouble(d -> d));
-        etaEndTimeNs = (long) (nanoTimeNow + (1 - progress) / averageProgress);
+        if (deltaProgress > 0.01 && deltaTimeNs > 1e9) {
 
-        lastProgress = progress;
-        lastProgressTime = nanoTimeNow;
+            lastProgressSamples.add(deltaProgress / deltaTimeNs);
+            double averageProgress = lastProgressSamples.stream().collect(averagingDouble(d -> d));
+            etaEndTimeNs = etaEndTimeNs / 2 + (long) (nanoTimeNow + (1 - progress) / averageProgress) / 2;
+
+            lastProgress = progress;
+            lastProgressTime = nanoTimeNow;
+        }
     }
 
     public double getElapsedTimeSec() {

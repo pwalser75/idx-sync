@@ -15,7 +15,10 @@ import static ch.frostnova.cli.idx.sync.config.IdxSyncFile.FILENAME;
 import static ch.frostnova.cli.idx.sync.config.ObjectMappers.yaml;
 import static ch.frostnova.cli.idx.sync.io.FileSystemUtil.traverseAll;
 import static ch.frostnova.cli.idx.sync.util.Invocation.runUnchecked;
-import static java.nio.file.Files.*;
+import static java.nio.file.Files.isDirectory;
+import static java.nio.file.Files.isHidden;
+import static java.nio.file.Files.isReadable;
+import static java.nio.file.Files.isRegularFile;
 import static java.util.stream.Collectors.toSet;
 
 /**
@@ -23,7 +26,7 @@ import static java.util.stream.Collectors.toSet;
  */
 public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
 
-    private final static Set<Path> ignored = Stream.of("/bin", "/dev", "/proc").map(Paths::get).collect(toSet());
+    private final static Set<Path> ignored = Stream.of("/dev", "/proc").map(Paths::get).collect(toSet());
     private double progress;
     private String message;
 
@@ -34,12 +37,10 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
 
     @Override
     public Map<IdxSyncFile, Path> run() {
-        int maxRecurseDepth = 6;
+        int maxRecurseDepth = 5;
 
         Map<IdxSyncFile, Path> result = new HashMap<>();
 
-        //TODO: could use DirectoryStream for faster traversal, but then progress could not be tracked.
-        // Idea: use DirectoryStream at depth 3+
         traverseAll((path, progress) -> {
             this.progress = progress;
             this.message = path.toString();
@@ -50,18 +51,17 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
             if (path.getNameCount() > maxRecurseDepth) {
                 return false;
             }
-
-            if (isRegularFile(path) && path.getFileName().equals(FILENAME) && runUnchecked(() -> isReadable(path))) {
-                try {
-                    URL url = path.toUri().toURL();
-                    IdxSyncFile syncFile = yaml().readValue(url, IdxSyncFile.class);
-                    result.put(syncFile, path);
-                    return true;
-                } catch (Exception ignored) {
-
-                }
-            }
             if (isDirectory(path)) {
+                Path syncFilePath = path.resolve(FILENAME);
+                if (isRegularFile(syncFilePath) && runUnchecked(() -> isReadable(path))) {
+                    try {
+                        URL url = syncFilePath.toUri().toURL();
+                        IdxSyncFile syncFile = yaml().readValue(url, IdxSyncFile.class);
+                        result.put(syncFile, syncFilePath);
+                    } catch (Exception ignored) {
+
+                    }
+                }
                 return runUnchecked(() -> path.getParent() == null || !isHidden(path));
             }
             return true;

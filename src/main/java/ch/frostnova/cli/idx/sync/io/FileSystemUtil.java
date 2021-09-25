@@ -8,7 +8,10 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 
 import static ch.frostnova.cli.idx.sync.console.ConsoleTools.clearLine;
-import static java.nio.file.Files.*;
+import static java.nio.file.Files.isDirectory;
+import static java.nio.file.Files.isReadable;
+import static java.nio.file.Files.isSymbolicLink;
+import static java.nio.file.Files.list;
 import static java.util.stream.Collectors.toList;
 
 public final class FileSystemUtil {
@@ -35,19 +38,17 @@ public final class FileSystemUtil {
 
     public static boolean traverse(Path path, FileVisitor fileVisitor, double progressLowerBound, double progressUpperBound) {
         boolean continueTraverse = fileVisitor.visit(path, progressLowerBound);
-        if (isDirectory(path) && continueTraverse) {
+        if (continueTraverse && isDirectory(path) && isReadable(path) && !isSymbolicLink(path)) {
             try {
-                if (!isSymbolicLink(path)) {
-                    List<Path> list = list(path).collect(toList());
-                    int n = list.size();
-                    int index = 0;
-                    for (Path child : list) {
-                        double lowerBound = progressLowerBound + (progressUpperBound - progressLowerBound) * index / n;
-                        double upperBound = progressLowerBound + (progressUpperBound - progressLowerBound) * (index + 1) / n;
-                        index++;
-                        if (!traverse(child, fileVisitor, lowerBound, upperBound)) {
-                            return true;
-                        }
+                List<Path> list = list(path).collect(toList());
+                int n = list.size();
+                int index = 0;
+                for (Path child : list) {
+                    double lowerBound = progressLowerBound + (progressUpperBound - progressLowerBound) * index / n;
+                    double upperBound = progressLowerBound + (progressUpperBound - progressLowerBound) * (index + 1) / n;
+                    index++;
+                    if (!traverse(child, fileVisitor, lowerBound, upperBound)) {
+                        return true;
                     }
                 }
             } catch (AccessDeniedException ignored) {

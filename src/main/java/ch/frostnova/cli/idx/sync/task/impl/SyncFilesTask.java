@@ -5,7 +5,11 @@ import ch.frostnova.cli.idx.sync.SyncResult;
 import ch.frostnova.cli.idx.sync.task.Task;
 import ch.frostnova.cli.idx.sync.util.Invocation;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,12 +20,19 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-import static ch.frostnova.cli.idx.sync.SyncAction.*;
+import static ch.frostnova.cli.idx.sync.SyncAction.CREATE;
+import static ch.frostnova.cli.idx.sync.SyncAction.DELETE;
+import static ch.frostnova.cli.idx.sync.SyncAction.UPDATE;
 import static ch.frostnova.cli.idx.sync.util.Invocation.runUnchecked;
 import static java.nio.file.FileVisitResult.CONTINUE;
-import static java.nio.file.Files.*;
+import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.exists;
+import static java.nio.file.Files.newInputStream;
+import static java.nio.file.Files.newOutputStream;
+import static java.nio.file.Files.readAttributes;
+import static java.nio.file.Files.setLastModifiedTime;
+import static java.nio.file.Files.walkFileTree;
 import static java.util.stream.Collectors.summarizingDouble;
-import static java.util.stream.Collectors.summarizingLong;
 
 /**
  * Task which synchronizes files.
@@ -30,7 +41,6 @@ public class SyncFilesTask implements Task<SyncResult> {
 
     private final static double FIXED_FILE_COST = 1e-4;
     private final static double FILE_COST_PER_BYTE = 2.75e-9;
-
 
     private final List<FileSyncJob> syncJobs;
     private double progress;
@@ -46,9 +56,8 @@ public class SyncFilesTask implements Task<SyncResult> {
     }
 
     @Override
-    public SyncResult run() throws Exception {
+    public SyncResult run() {
 
-        long totalBytes = syncJobs.stream().collect(summarizingLong(FileSyncJob::getFileSize)).getSum();
         double totalCost = syncJobs.stream().collect(summarizingDouble(SyncFilesTask::getCost)).getSum();
 
         long filesCreated = 0;

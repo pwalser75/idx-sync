@@ -9,12 +9,25 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
-import static ch.frostnova.cli.idx.sync.SyncAction.*;
+import static ch.frostnova.cli.idx.sync.SyncAction.CREATE;
+import static ch.frostnova.cli.idx.sync.SyncAction.DELETE;
+import static ch.frostnova.cli.idx.sync.SyncAction.UPDATE;
 import static ch.frostnova.cli.idx.sync.io.FileSystemUtil.traverse;
 import static ch.frostnova.cli.idx.sync.util.Invocation.runUnchecked;
-import static java.nio.file.Files.*;
+import static java.nio.file.Files.isDirectory;
+import static java.nio.file.Files.isHidden;
+import static java.nio.file.Files.isReadable;
+import static java.nio.file.Files.isRegularFile;
+import static java.nio.file.Files.readAttributes;
+import static java.nio.file.Files.size;
 import static java.time.Duration.between;
 
 /**
@@ -40,6 +53,8 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
         List<FileSyncJob> result = new ArrayList<>();
 
         Set<Path> relativePaths = new HashSet<>();
+        Map<Path, Path> sourcePaths = new HashMap<>();
+        Map<Path, Path> targetPaths = new HashMap<>();
 
         traverse(syncJob.getSource(), (path, progress) -> {
             this.progress = progress * 0.25;
@@ -48,6 +63,7 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
             boolean skip = skip(relativePath);
             if (!runUnchecked(() -> isHidden(path)) && !skip) {
                 relativePaths.add(relativePath);
+                sourcePaths.put(relativePath, path);
                 return true;
             }
             return !isDirectory(path) || !skip;
@@ -59,6 +75,7 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
             boolean skip = skip(relativePath);
             if (!runUnchecked(() -> isHidden(path)) && !skip) {
                 relativePaths.add(relativePath);
+                targetPaths.put(relativePath, path);
                 return true;
             }
             return !isDirectory(path) || !skip;
@@ -67,12 +84,12 @@ public class CreateFileSyncJobsTask implements Task<List<FileSyncJob>> {
         for (Path relativePath : relativePaths) {
             this.progress = 0.5 + (double) index / relativePaths.size() * 0.5;
             this.message = relativePath.toString();
-            Path sourcePath = syncJob.getSource().resolve(relativePath);
-            Path targetPath = syncJob.getTarget().resolve(relativePath);
-            if (!exists(targetPath) && isRegularFile(sourcePath) && isReadable(sourcePath)) {
-                result.add(new FileSyncJob(sourcePath, targetPath, CREATE, runUnchecked(() -> size(sourcePath))));
-            } else if (!exists(sourcePath)) {
-                result.add(new FileSyncJob(sourcePath, targetPath, DELETE));
+            Path sourcePath = sourcePaths.get(relativePath);
+            Path targetPath = targetPaths.get(relativePath);
+            if (targetPath == null && isRegularFile(sourcePath) && isReadable(sourcePath)) {
+                result.add(new FileSyncJob(sourcePath, syncJob.getTarget().resolve(relativePath), CREATE, runUnchecked(() -> size(sourcePath))));
+            } else if (sourcePath == null) {
+                result.add(new FileSyncJob(syncJob.getSource().resolve(relativePath), targetPath, DELETE));
             } else if (isRegularFile(sourcePath) && isReadable(sourcePath)) {
                 Long sourceFileSize = runUnchecked(() -> size(sourcePath));
                 Long targetFileSize = runUnchecked(() -> size(targetPath));
