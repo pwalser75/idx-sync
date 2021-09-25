@@ -20,9 +20,6 @@
         <junitVersion>5.8.1</junitVersion>
         <assertjVersion>3.21.0</assertjVersion>
         <mockitoVersion>2.23.4</mockitoVersion>
-        <slf4jVersion>1.7.25</slf4jVersion>
-        <logbackVersion>1.2.3</logbackVersion>
-        <jLineVersion>3.20.0</jLineVersion>
 
     </properties>
 
@@ -70,11 +67,6 @@
             <artifactId>jackson-dataformat-yaml</artifactId>
             <version>${jacksonVersion}</version>
         </dependency>
-        <dependency>
-            <groupId>org.jline</groupId>
-            <artifactId>jline</artifactId>
-            <version>${jLineVersion}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -93,30 +85,6 @@
             <artifactId>mockito-core</artifactId>
             <version>${mockitoVersion}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4jVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>${slf4jVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jul-to-slf4j</artifactId>
-            <version>${slf4jVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logbackVersion}</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 

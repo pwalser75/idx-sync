@@ -1,22 +1,17 @@
 package ch.frostnova.cli.idx.sync.console;
 
-import ch.frostnova.cli.idx.sync.util.Invocation;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
-
-import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.*;
+import static ch.frostnova.cli.idx.sync.console.AnsiEscape.CLEAR_FROM_CURSOR;
+import static ch.frostnova.cli.idx.sync.console.AnsiEscape.CURSOR_START_LINE;
+import static ch.frostnova.cli.idx.sync.console.AnsiEscape.format;
 
 public final class ConsoleTools {
 
-    private static final Terminal terminal;
-
-    static {
-        terminal = Invocation.runUnchecked(() ->
-                TerminalBuilder.builder().color(true).encoding(StandardCharsets.UTF_8).build());
-    }
+    /**
+     * Hard to get for different consoles and console windows sizes - as for now, we're using a static value.
+     */
+    private final static int LINE_LENGTH = 76;
 
     private ConsoleTools() {
     }
@@ -72,6 +67,6 @@ public final class ConsoleTools {
     }
 
     public static int getLineLength() {
-        return Math.max(80, terminal.getWidth());
+        return LINE_LENGTH;
     }
 }

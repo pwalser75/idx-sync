@@ -29,17 +29,6 @@ ext {
                     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion",
                     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}",
             ],
-            loggingAPI : [
-                    "org.slf4j:slf4j-api:${slf4jVersion}"
-            ],
-            loggingImpl: [
-                    "org.slf4j:jcl-over-slf4j:${slf4jVersion}",
-                    "org.slf4j:jul-to-slf4j:${slf4jVersion}",
-                    "ch.qos.logback:logback-classic:${logbackVersion}"
-            ],
-            jLine      : [
-                    "org.jline:jline:${jLineVersion}"
-            ],
             testBase   : [
                     "org.junit.jupiter:junit-jupiter-api:${junitVersion}",
                     "org.assertj:assertj-core:$assertjVersion",
@@ -53,9 +42,6 @@ ext {
 
 dependencies {
     implementation libs.jackson
-    implementation libs.loggingAPI
-    implementation libs.loggingImpl
-    implementation libs.jLine
 
     testImplementation libs.testBase
     testRuntimeOnly libs.testRuntime
