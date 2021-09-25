@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
-import static ch.frostnova.cli.idx.sync.console.ConsoleTools.clearLine;
+import static ch.frostnova.cli.idx.sync.console.Console.clearLine;
 import static java.nio.file.Files.isDirectory;
 import static java.nio.file.Files.isReadable;
 import static java.nio.file.Files.isSymbolicLink;

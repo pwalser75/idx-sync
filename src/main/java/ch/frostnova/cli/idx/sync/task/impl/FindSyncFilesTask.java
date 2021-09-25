@@ -43,7 +43,6 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
 
         traverseAll((path, progress) -> {
             this.progress = progress;
-            this.message = path.toString();
 
             if (ignored.contains(path)) {
                 return false;
@@ -52,6 +51,7 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
                 return false;
             }
             if (isDirectory(path)) {
+                this.message = path.toString();
                 Path syncFilePath = path.resolve(FILENAME);
                 if (isRegularFile(syncFilePath) && runUnchecked(() -> isReadable(path))) {
                     try {

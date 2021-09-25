@@ -1,5 +1,6 @@
 package ch.frostnova.cli.idx.sync.config;
 
+import ch.frostnova.cli.idx.sync.console.Console;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +27,7 @@ public class IdxSyncFileTest {
         IdxSyncFile testData = testData();
 
         String serialized = objectMapper.writeValueAsString(testData);
-        System.out.println(serialized);
+        Console.println(serialized);
 
         IdxSyncFile deserialized = objectMapper.readValue(serialized, IdxSyncFile.class);
 

@@ -1,7 +1,7 @@
 package ch.frostnova.cli.idx.sync.console;
 
 import static ch.frostnova.cli.idx.sync.console.AnsiEscape.*;
-import static ch.frostnova.cli.idx.sync.console.ConsoleTools.*;
+import static ch.frostnova.cli.idx.sync.console.Console.*;
 
 public class ConsoleProgressBar {
 
@@ -37,14 +37,14 @@ public class ConsoleProgressBar {
         String line = task + progressBar;
         line += clip(message, lineLength - printableSize(line));
         line += " ".repeat(Math.max(0, lineLength - printableSize(line)));
-        System.out.printf("\r%s", line);
+        Console.printf("\r%s", line);
     }
 
     public void printDone(String task, String message) {
         if (isModern()) {
-            System.out.println(format(task, CURSOR_START_LINE, CLEAR_FROM_CURSOR, ANSI_BOLD) + ": " + message);
+            Console.println(format(task, CURSOR_START_LINE, CLEAR_FROM_CURSOR, ANSI_BOLD) + ": " + message);
         } else {
-            System.out.printf("\r%s\r%s: %s\n", " ".repeat(getLineLength()), task, message);
+            Console.printf("\r%s\r%s: %s\n", " ".repeat(getLineLength()), task, message);
         }
     }
 }

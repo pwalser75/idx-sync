@@ -3,7 +3,7 @@ package ch.frostnova.cli.idx.sync.console;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static ch.frostnova.cli.idx.sync.console.ConsoleTools.isModern;
+import static ch.frostnova.cli.idx.sync.console.Console.isModern;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 
@@ -51,16 +51,12 @@ public enum AnsiEscape {
         return stream(style).map(AnsiEscape::getEscapeSequence).collect(joining()) + Optional.ofNullable(text).orElse("") + ANSI_RESET;
     }
 
-    private static String removeAnsiEscapes(String text) {
-        return text.replaceAll("\u001B\\[[;\\d]*m", "");
-    }
-
     @Override
     public String toString() {
         return escapeSequence;
     }
 
     public static void main(String[] args) {
-        Arrays.stream(AnsiEscape.values()).map(v -> format(v.name(), v)).forEach(System.out::println);
+        Arrays.stream(AnsiEscape.values()).map(v -> format(v.name(), v)).forEach(Console::println);
     }
 }

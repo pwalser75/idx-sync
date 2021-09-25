@@ -1,5 +1,7 @@
 package ch.frostnova.cli.idx.sync;
 
+import ch.frostnova.cli.idx.sync.console.Console;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -33,7 +35,7 @@ public class FileSystemScanBenchmark {
                 strategy.visitUnchecked(root, fileCount);
             }
         });
-        System.out.printf("\nFound %,d files in %.2f sec\n", fileCount.get(), timeSec);
+        Console.printf("\nFound %,d files in %.2f sec\n", fileCount.get(), timeSec);
     }
 
     private static double benchmark(Task task) {
