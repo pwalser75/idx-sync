@@ -44,14 +44,14 @@ public class ConsoleProgressBar {
         String line = task + progressBar;
         line += clip(message, lineLength - printableSize(line));
         line += " ".repeat(Math.max(0, lineLength - printableSize(line)));
-        Console.printf("\r%s", line);
+        System.out.print(String.format("\r%s", line));
     }
 
     public static void printDone(String task, String message) {
         if (isModern()) {
-            Console.println(format(task, CURSOR_START_LINE, CLEAR_FROM_CURSOR, ANSI_BOLD) + ": " + message);
+            System.out.println(format(task, CURSOR_START_LINE, CLEAR_FROM_CURSOR, ANSI_BOLD) + ": " + message);
         } else {
-            Console.printf("\r%s\r%s: %s\n", " ".repeat(getLineLength()), task, message);
+            System.out.print(String.format("\r%s\r%s: %s\n", " ".repeat(getLineLength()), task, message));
         }
     }
 }

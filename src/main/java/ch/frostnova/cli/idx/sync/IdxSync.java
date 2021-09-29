@@ -1,7 +1,6 @@
 package ch.frostnova.cli.idx.sync;
 
 import ch.frostnova.cli.idx.sync.config.IdxSyncFile;
-import ch.frostnova.cli.idx.sync.console.Console;
 import ch.frostnova.cli.idx.sync.filter.PathFilter;
 import ch.frostnova.cli.idx.sync.monitor.ProgressMonitor;
 import ch.frostnova.cli.idx.sync.monitor.impl.ConsoleProgressMonitor;
@@ -18,8 +17,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -61,6 +62,7 @@ import static java.util.Comparator.nullsLast;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -93,9 +95,9 @@ public class IdxSync {
                     printUsage();
                 }
             } catch (IllegalArgumentException ex) {
-                Console.printf("%s %s: %s", ERROR, ex.getClass().getSimpleName(), ex.getMessage());
+                System.out.print(String.format("%s %s: %s", ERROR, ex.getClass().getSimpleName(), ex.getMessage()));
             } catch (Exception ex) {
-                Console.printf("%s %s: %s", ERROR, ex.getClass().getSimpleName(), ex.getMessage());
+                System.out.print(String.format("%s %s: %s", ERROR, ex.getClass().getSimpleName(), ex.getMessage()));
                 ex.printStackTrace();
             }
         }
@@ -106,20 +108,20 @@ public class IdxSync {
     }
 
     private static void printLogo() {
-        Console.println(format("------------", ANSI_BLUE));
-        Console.println(format(ROCKET + " Idx SYNC", ANSI_BOLD, ANSI_BLUE));
-        Console.println(format("------------", ANSI_BOLD, ANSI_BLUE));
+        System.out.println(format("------------", ANSI_BLUE));
+        System.out.println(format(ROCKET + " Idx SYNC", ANSI_BOLD, ANSI_BLUE));
+        System.out.println(format("------------", ANSI_BOLD, ANSI_BLUE));
     }
 
     private static void printUsage() {
-        Console.printf("Usage: %s\n", format("java -jar idx-sync-shadow.jar [command] [args]...", ANSI_BOLD, ANSI_CYAN));
-        Console.printf("Commands:\n");
-        Console.printf("- %s: %s\n", format("run   ", ANSI_BOLD, ANSI_GREEN), "Synchronize files (default task when no arguments are provided)");
-        Console.printf("- %s: %s\n", format("scan  ", ANSI_BOLD, ANSI_GREEN), "Scan for sync files and show matching pairs");
-        Console.printf("- %s: %s\n", format("diff  ", ANSI_BOLD, ANSI_GREEN), "Scan for sync files, compare matching pairs and report changes");
-        Console.printf("- %s: %s\n", format("source", ANSI_BOLD, ANSI_GREEN), format("[path] [name]", ANSI_GRAY) + ": add the given path as a source with the given name");
-        Console.printf("- %s: %s\n", format("target", ANSI_BOLD, ANSI_GREEN), format("[path] [source-folder-id]", ANSI_GRAY) + ": add the given path as a target for the source with the given id");
-        Console.printf("- %s: %s\n", format("remove", ANSI_BOLD, ANSI_GREEN), format("[path]", ANSI_GRAY) + " remove the given path as source or target folder (deletes the .idxsync file)");
+        System.out.print(String.format("Usage: %s\n", format("java -jar idx-sync-shadow.jar [command] [args]...", ANSI_BOLD, ANSI_CYAN)));
+        System.out.print(String.format("Commands:\n"));
+        System.out.print(String.format("- %s: %s\n", format("run   ", ANSI_BOLD, ANSI_GREEN), "Synchronize files (default task when no arguments are provided)"));
+        System.out.print(String.format("- %s: %s\n", format("scan  ", ANSI_BOLD, ANSI_GREEN), "Scan for sync files and show matching pairs"));
+        System.out.print(String.format("- %s: %s\n", format("diff  ", ANSI_BOLD, ANSI_GREEN), "Scan for sync files, compare matching pairs and report changes"));
+        System.out.print(String.format("- %s: %s\n", format("source", ANSI_BOLD, ANSI_GREEN), format("[path] [name]", ANSI_GRAY) + ": add the given path as a source with the given name"));
+        System.out.print(String.format("- %s: %s\n", format("target", ANSI_BOLD, ANSI_GREEN), format("[path] [source-folder-id]", ANSI_GRAY) + ": add the given path as a target for the source with the given id"));
+        System.out.print(String.format("- %s: %s\n", format("remove", ANSI_BOLD, ANSI_GREEN), format("[path]", ANSI_GRAY) + " remove the given path as source or target folder (deletes the .idxsync file)"));
     }
 
     private static Predicate<Path> createExcludeFilter(Set<String> excludeFilePatterns) {
@@ -148,7 +150,7 @@ public class IdxSync {
         ).collect(Collectors.toSet()));
         try (Writer writer = newBufferedWriter(resolve(path))) {
             yaml().writeValue(writer, syncFile);
-            Console.println("Created .idxsync file in " + path + ", folder id: " + syncFile.getFolderId());
+            System.out.println("Created .idxsync file in " + path + ", folder id: " + syncFile.getFolderId());
         }
     }
 
@@ -160,7 +162,7 @@ public class IdxSync {
         syncFile.setSourceFolderId(sourceFolderId);
         try (Writer writer = newBufferedWriter(resolve(path))) {
             yaml().writeValue(writer, syncFile);
-            Console.println("Created .idxsync file in " + path);
+            System.out.println("Created .idxsync file in " + path);
         }
     }
 
@@ -169,7 +171,7 @@ public class IdxSync {
         Path syncFilePath = resolve(path);
         if (exists(syncFilePath)) {
             delete(syncFilePath);
-            Console.println("Removed .idxsync file from " + path);
+            System.out.println("Removed .idxsync file from " + path);
         }
     }
 
@@ -194,15 +196,15 @@ public class IdxSync {
 
         Map<IdxSyncFile, Path> syncFilePaths = taskRunner.run(new FindSyncFilesTask());
         if (syncFilePaths.isEmpty()) {
-            Console.printf("No %s files found.\n", FILENAME);
+            System.out.print(String.format("No %s files found.\n", FILENAME));
         } else {
-            Console.printf("Found following %s files:\n", FILENAME);
+            System.out.print(String.format("Found following %s files:\n", FILENAME));
             syncFilePaths.keySet().stream().sorted(syncFileComparator).forEach(syncFile -> {
                 Path path = syncFilePaths.get(syncFile);
                 if (syncFile.getSourceFolderId() != null) {
-                    Console.printf("- %s %s: source = %s in %s\n", SYNC, format(syncFile.getFolderId(), ANSI_BOLD, ANSI_CYAN), format(syncFile.getSourceFolderId(), ANSI_CYAN), path.getParent());
+                    System.out.print(String.format("- %s %s: source = %s in %s\n", SYNC, format(syncFile.getFolderId(), ANSI_BOLD, ANSI_CYAN), format(syncFile.getSourceFolderId(), ANSI_CYAN), path.getParent()));
                 } else {
-                    Console.printf("- %s %s: %s, in %s\n", SYNC, format(syncFile.getFolderId(), ANSI_BOLD, ANSI_CYAN), format(syncFile.getFolderName(), ANSI_CYAN), path.getParent());
+                    System.out.print(String.format("- %s %s: %s, in %s\n", SYNC, format(syncFile.getFolderId(), ANSI_BOLD, ANSI_CYAN), format(syncFile.getFolderName(), ANSI_CYAN), path.getParent()));
                 }
             });
         }
@@ -215,9 +217,9 @@ public class IdxSync {
                 .collect(toMap(identity(), it -> syncFileById.get(it.getSourceFolderId())));
 
         if (syncSourceTarget.isEmpty()) {
-            Console.println("No matching sync folders found.");
+            System.out.println("No matching sync folders found.");
         } else {
-            Console.println("Matching sync folders found:");
+            System.out.println("Matching sync folders found:");
             syncSourceTarget.keySet().stream().sorted(syncFileComparator).forEach(target -> {
                 IdxSyncFile source = syncSourceTarget.get(target);
 
@@ -227,7 +229,7 @@ public class IdxSync {
                 excludePatterns.addAll(target.getExcludePatterns());
                 Predicate<Path> excludeFilter = createExcludeFilter(excludePatterns);
 
-                Console.printf("- %s %s %s -> %s\n", CHECK, format(source.getFolderName(), ANSI_BOLD, ANSI_GREEN), syncFilePaths.get(source).getParent(), syncFilePaths.get(target).getParent());
+                System.out.print(String.format("- %s %s %s -> %s\n", CHECK, format(source.getFolderName(), ANSI_BOLD, ANSI_GREEN), syncFilePaths.get(source).getParent(), syncFilePaths.get(target).getParent()));
                 result.add(new SyncJob(source.getFolderName(), syncFilePaths.get(source).getParent(), syncFilePaths.get(target).getParent(), excludeFilter));
             });
         }
@@ -240,10 +242,26 @@ public class IdxSync {
         List<FileSyncJob> fileSyncJobs = taskRunner.run(batchTask).stream().flatMap(Collection::stream).collect(toList());
         Map<SyncAction, Long> syncActionsPerType = fileSyncJobs.stream().collect(groupingBy(f -> f.getSyncAction(), counting()));
 
-        Console.println("Changes since last sync:");
-        Console.printf("- %s files created\n", format(syncActionsPerType.getOrDefault(CREATE, 0L), ANSI_BOLD, ANSI_GREEN));
-        Console.printf("- %s files updated\n", format(syncActionsPerType.getOrDefault(UPDATE, 0L), ANSI_BOLD, ANSI_BLUE));
-        Console.printf("- %s files deleted\n", format(syncActionsPerType.getOrDefault(DELETE, 0L), ANSI_BOLD, ANSI_ORANGE));
+        List<String> changes = new LinkedList<>();
+        Optional.ofNullable(syncActionsPerType.get(CREATE))
+                .filter(n -> n > 0)
+                .map(n -> String.format("%s files created", format(n, ANSI_BOLD, ANSI_GREEN)))
+                .ifPresent(changes::add);
+        Optional.ofNullable(syncActionsPerType.get(UPDATE))
+                .filter(n -> n > 0)
+                .map(n -> String.format("%s files updated", format(n, ANSI_BOLD, ANSI_BLUE)))
+                .ifPresent(changes::add);
+
+        Optional.ofNullable(syncActionsPerType.get(DELETE))
+                .filter(n -> n > 0)
+                .map(n -> String.format("%s files deleted", format(n, ANSI_BOLD, ANSI_ORANGE)))
+                .ifPresent(changes::add);
+
+        if (!changes.isEmpty()) {
+            System.out.println("Changes since last sync: " + changes.stream().collect(joining(", ")));
+        } else {
+            System.out.println("No changes since last sync.");
+        }
         return fileSyncJobs;
     }
 
@@ -258,25 +276,25 @@ public class IdxSync {
         SyncResult syncResult = sync(fileSyncJobs);
 
         if (syncResult.isEmpty()) {
-            Console.println("Done, no actions performed.");
+            System.out.println("Done, no actions performed.");
         } else {
-            Console.println("Sync Result:");
+            System.out.println("Sync Result:");
             if (syncResult.getFilesCreated() > 0) {
-                Console.printf("- %s files created\n", format(syncResult.getFilesCreated(), ANSI_BOLD, ANSI_GREEN));
+                System.out.print(String.format("- %s files created\n", format(syncResult.getFilesCreated(), ANSI_BOLD, ANSI_GREEN)));
             }
             if (syncResult.getFilesUpdated() > 0) {
-                Console.printf("- %s files updated\n", format(syncResult.getFilesUpdated(), ANSI_BOLD, ANSI_BLUE));
+                System.out.print(String.format("- %s files updated\n", format(syncResult.getFilesUpdated(), ANSI_BOLD, ANSI_BLUE)));
             }
             if (syncResult.getFilesDeleted() > 0) {
-                Console.printf("- %s files deleted\n", format(syncResult.getFilesDeleted(), ANSI_BOLD, ANSI_ORANGE));
+                System.out.print(String.format("- %s files deleted\n", format(syncResult.getFilesDeleted(), ANSI_BOLD, ANSI_ORANGE)));
             }
             if (syncResult.getBytesTransferred() > 0) {
-                Console.printf("- %s transferred\n", format(formatBytes(syncResult.getBytesTransferred()), ANSI_BOLD, ANSI_YELLOW));
+                System.out.print(String.format("- %s transferred\n", format(formatBytes(syncResult.getBytesTransferred()), ANSI_BOLD, ANSI_YELLOW)));
             }
             if (syncResult.getErrors().size() > 0) {
-                Console.printf("- %s errors\n", format(syncResult.getErrors().size(), ANSI_BOLD, ANSI_RED));
+                System.out.print(String.format("- %s errors\n", format(syncResult.getErrors().size(), ANSI_BOLD, ANSI_RED)));
                 for (String error : syncResult.getErrors()) {
-                    Console.printf("  %s\n", format(error, ANSI_RED));
+                    System.out.print(String.format("  %s\n", format(error, ANSI_RED)));
                 }
             }
         }

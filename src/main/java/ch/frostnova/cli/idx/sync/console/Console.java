@@ -23,7 +23,7 @@ public final class Console {
     }
 
     public static void clearLine() {
-        Console.print(format("", CURSOR_START_LINE, CLEAR_FROM_CURSOR));
+        System.out.print(format("", CURSOR_START_LINE, CLEAR_FROM_CURSOR));
     }
 
     public static int printableSize(String text) {
@@ -36,22 +36,6 @@ public final class Console {
 
     public static String removeAnsiEscapes(String text) {
         return text.replaceAll("\u001B\\[[;\\d]*m", "");
-    }
-
-
-    public static void println(String text) {
-        print(text + "\n");
-    }
-
-    public static void printf(String text, Object... args) {
-        print(String.format(text, args));
-    }
-
-    public static void print(String text) {
-        if (!isModern()) {
-            text = removeAnsiEscapes(text);
-        }
-        System.out.print(clip(text, getLineLength()));
     }
 
     public static String clip(String text, int length) {
@@ -67,10 +51,6 @@ public final class Console {
             text = text.substring(0, text.length() - 1);
         }
         return text + ellipis;
-    }
-
-    private static String clearRight(String text, int length) {
-        return text + " ".repeat(Math.max(0, length - printableSize(text)));
     }
 
     public static int getLineLength() {

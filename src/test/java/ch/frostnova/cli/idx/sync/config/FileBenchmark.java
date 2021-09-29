@@ -1,6 +1,5 @@
 package ch.frostnova.cli.idx.sync.config;
 
-import ch.frostnova.cli.idx.sync.console.Console;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -80,7 +79,7 @@ public class FileBenchmark {
                 delete(target);
             }
             long time = totalTimeNs / loops;
-            Console.println("File Size " + (1 << b) + ": " + new DecimalFormat("0.000000").format(time / 1e9) + " sec");
+            System.out.println("File Size " + (1 << b) + ": " + new DecimalFormat("0.000000").format(time / 1e9) + " sec");
         }
     }
 }

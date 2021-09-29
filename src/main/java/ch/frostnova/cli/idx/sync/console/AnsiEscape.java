@@ -48,7 +48,7 @@ public enum AnsiEscape {
     }
 
     public static void main(String[] args) {
-        Arrays.stream(AnsiEscape.values()).map(v -> format(v.name(), v)).forEach(Console::println);
+        Arrays.stream(AnsiEscape.values()).map(v -> format(v.name(), v)).forEach(text -> System.out.println(text));
     }
 
     private String getEscapeSequence() {
