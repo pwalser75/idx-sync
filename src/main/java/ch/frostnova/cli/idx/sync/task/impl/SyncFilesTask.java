@@ -50,6 +50,31 @@ public class SyncFilesTask implements Task<SyncResult> {
         this.syncJobs = Objects.requireNonNull(syncJobs, "syncJobs are required");
     }
 
+    private static double getCost(FileSyncJob fileSyncJob) {
+        return FIXED_FILE_COST + fileSyncJob.getFileSize() * FILE_COST_PER_BYTE;
+    }
+
+    private static void delete(Path path) {
+        if (!exists(path)) {
+            return;
+        }
+        Invocation.runUnchecked(() -> {
+            walkFileTree(path, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    Files.delete(dir);
+                    return CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.delete(file);
+                    return CONTINUE;
+                }
+            });
+        });
+    }
+
     @Override
     public String getName() {
         return "Synching files";
@@ -120,30 +145,5 @@ public class SyncFilesTask implements Task<SyncResult> {
     @Override
     public String getMessage() {
         return message;
-    }
-
-    private static double getCost(FileSyncJob fileSyncJob) {
-        return FIXED_FILE_COST + fileSyncJob.getFileSize() * FILE_COST_PER_BYTE;
-    }
-
-    private static void delete(Path path) {
-        if (!exists(path)) {
-            return;
-        }
-        Invocation.runUnchecked(() -> {
-            walkFileTree(path, new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
-                    return CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return CONTINUE;
-                }
-            });
-        });
     }
 }

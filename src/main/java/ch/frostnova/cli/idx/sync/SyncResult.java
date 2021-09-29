@@ -39,4 +39,8 @@ public class SyncResult {
     public List<String> getErrors() {
         return errors;
     }
+
+    public boolean isEmpty() {
+        return filesCreated + filesUpdated + filesDeleted == 0 && errors.isEmpty();
+    }
 }

@@ -14,10 +14,9 @@ import static java.util.Objects.requireNonNull;
  */
 public class ConsoleProgressMonitor implements ProgressMonitor {
 
+    private final ConsoleProgressBar consoleProgressBar;
     private String taskName;
     private ProgressTimer progressTimer;
-    private final ConsoleProgressBar consoleProgressBar;
-
     private long startTimeSystemNs;
 
     public ConsoleProgressMonitor() {
@@ -53,6 +52,6 @@ public class ConsoleProgressMonitor implements ProgressMonitor {
         long nanoTimeNow = nanoTime();
         double elapsedSec = 1e-9 * (nanoTimeNow - startTimeSystemNs);
 
-        consoleProgressBar.printDone(taskName, message + " (in " + formatTime(elapsedSec) + ")");
+        ConsoleProgressBar.printDone(taskName, message + " (in " + formatTime(elapsedSec) + ")");
     }
 }

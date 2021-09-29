@@ -13,16 +13,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class IdxSyncFileTest {
 
-    @Test
-    void shouldReadWriteSyncFileJSON() throws IOException {
-        shouldReadWriteSyncFile(ObjectMappers.json());
-    }
-
-    @Test
-    void shouldReadWriteSyncFileYAML() throws IOException {
-        shouldReadWriteSyncFile(ObjectMappers.yaml());
-    }
-
     private static void shouldReadWriteSyncFile(ObjectMapper objectMapper) throws IOException {
         IdxSyncFile testData = testData();
 
@@ -43,5 +33,15 @@ public class IdxSyncFileTest {
         idxSyncFile.setSourceFolderId(randomUUID().toString());
         idxSyncFile.setTags(Stream.of("DEV", "BACKUP", "DAILY").collect(toSet()));
         return idxSyncFile;
+    }
+
+    @Test
+    void shouldReadWriteSyncFileJSON() throws IOException {
+        shouldReadWriteSyncFile(ObjectMappers.json());
+    }
+
+    @Test
+    void shouldReadWriteSyncFileYAML() throws IOException {
+        shouldReadWriteSyncFile(ObjectMappers.yaml());
     }
 }

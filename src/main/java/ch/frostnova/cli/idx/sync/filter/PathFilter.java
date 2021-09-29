@@ -16,6 +16,8 @@ import static java.util.UUID.randomUUID;
  */
 public class PathFilter implements Predicate<Path> {
 
+    public final static Predicate<Path> NONE = path -> false;
+
     private final static String ANY_CHAR_SEQUENCE = "[^/]*";
     private final static String ANY_CHAR = "[^/]";
     private final static String ANY_PATH_SEQUENCE = "(?:[^/]+(?:/[^/]+)*/)?";

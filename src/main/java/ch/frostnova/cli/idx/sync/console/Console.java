@@ -2,7 +2,10 @@ package ch.frostnova.cli.idx.sync.console;
 
 import java.util.Locale;
 
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.*;
+import static ch.frostnova.cli.idx.sync.console.AnsiEscape.CLEAR_FROM_CURSOR;
+import static ch.frostnova.cli.idx.sync.console.AnsiEscape.CURSOR_START_LINE;
+import static ch.frostnova.cli.idx.sync.console.AnsiEscape.format;
+import static ch.frostnova.cli.idx.sync.console.TextIcon.ELLIPSIS;
 
 public final class Console {
 
@@ -17,26 +20,6 @@ public final class Console {
     public static boolean isModern() {
         String operatingSystem = System.getProperty("os.name", "unknown").toLowerCase(Locale.ROOT);
         return (operatingSystem.contains("linux") || operatingSystem.contains("unix") || operatingSystem.contains("mac"));
-    }
-
-    public static String rocket() {
-        return isModern() ? "\uD83D\uDE80" : "";
-    }
-
-    public static String ellipis() {
-        return isModern() ? "\u2026" : "...";
-    }
-
-    public static String error() {
-        return isModern() ? "\u274C" : "[x]";
-    }
-
-    public static String sync() {
-        return isModern() ? "\uD83D\uDD04" : "<->";
-    }
-
-    public static String check() {
-        return isModern() ? "\u2705" : "*";
     }
 
     public static void clearLine() {
@@ -72,7 +55,7 @@ public final class Console {
     }
 
     public static String clip(String text, int length) {
-        String ellipis = ellipis();
+        String ellipis = ELLIPSIS.toString();
         int elipsisSize = printableSize(ellipis);
         if (length < 1) {
             return "";

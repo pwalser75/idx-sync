@@ -32,10 +32,6 @@ public enum AnsiEscape {
         escapeSequence = "\u001b[" + code;
     }
 
-    private String getEscapeSequence() {
-        return escapeSequence;
-    }
-
     /**
      * Format a text using the given styles
      *
@@ -51,12 +47,16 @@ public enum AnsiEscape {
         return stream(style).map(AnsiEscape::getEscapeSequence).collect(joining()) + Optional.ofNullable(text).orElse("") + ANSI_RESET;
     }
 
-    @Override
-    public String toString() {
+    public static void main(String[] args) {
+        Arrays.stream(AnsiEscape.values()).map(v -> format(v.name(), v)).forEach(Console::println);
+    }
+
+    private String getEscapeSequence() {
         return escapeSequence;
     }
 
-    public static void main(String[] args) {
-        Arrays.stream(AnsiEscape.values()).map(v -> format(v.name(), v)).forEach(Console::println);
+    @Override
+    public String toString() {
+        return escapeSequence;
     }
 }

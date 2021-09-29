@@ -12,6 +12,13 @@ public class ProgressBarStyle {
     private final char progressBlock;
     private final String progressFractions;
 
+    public ProgressBarStyle(String leftBracket, String rightBracket, char progressBlock, String progressFractions) {
+        this.leftBracket = leftBracket;
+        this.rightBracket = rightBracket;
+        this.progressBlock = progressBlock;
+        this.progressFractions = progressFractions;
+    }
+
     public static void main(String[] args) {
         ProgressBarStyle style = ProgressBarStyle.autodetect();
         ConsoleProgressBar consoleProgressBar = new ConsoleProgressBar(style);
@@ -23,14 +30,7 @@ public class ProgressBarStyle {
             } catch (Exception ignored) {
             }
         }
-        consoleProgressBar.printDone("Test", "done");
-    }
-
-    public ProgressBarStyle(String leftBracket, String rightBracket, char progressBlock, String progressFractions) {
-        this.leftBracket = leftBracket;
-        this.rightBracket = rightBracket;
-        this.progressBlock = progressBlock;
-        this.progressFractions = progressFractions;
+        ConsoleProgressBar.printDone("Test", "done");
     }
 
     public static ProgressBarStyle autodetect() {

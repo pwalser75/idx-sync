@@ -30,6 +30,10 @@ public class IdxSyncFile {
     @JsonProperty("tags")
     private Set<String> tags = new HashSet<>();
 
+    public static Path resolve(Path parent) {
+        return parent.resolve(FILENAME);
+    }
+
     public String getFolderId() {
         return folderId;
     }
@@ -76,10 +80,6 @@ public class IdxSyncFile {
 
     public void setTags(Set<String> tags) {
         this.tags = tags;
-    }
-
-    public static Path resolve(Path parent) {
-        return parent.resolve(FILENAME);
     }
 
     @Override

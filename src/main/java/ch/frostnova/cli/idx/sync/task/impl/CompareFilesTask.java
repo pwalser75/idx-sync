@@ -9,7 +9,14 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static ch.frostnova.cli.idx.sync.SyncAction.CREATE;
@@ -47,6 +54,8 @@ public class CompareFilesTask implements Task<List<FileSyncJob>> {
     public List<FileSyncJob> run() {
         List<FileSyncJob> result = new ArrayList<>();
 
+        Predicate<Path> excludeFilter = syncJob.getExcludeFilter();
+
         Set<Path> relativePaths = new HashSet<>();
         Map<Path, Path> sourcePaths = new HashMap<>();
         Map<Path, Path> targetPaths = new HashMap<>();
@@ -55,25 +64,23 @@ public class CompareFilesTask implements Task<List<FileSyncJob>> {
             this.progress = progress * 0.25;
             this.message = path.toString();
             Path relativePath = syncJob.getSource().relativize(path);
-            boolean skip = skip(relativePath);
-            if (!runUnchecked(() -> isHidden(path)) && !skip) {
-                relativePaths.add(relativePath);
-                sourcePaths.put(relativePath, path);
-                return true;
+            if (excludeFilter.test(relativePath) || runUnchecked(() -> isHidden(path))) {
+                return !isDirectory(path);
             }
-            return !isDirectory(path) || !skip;
+            relativePaths.add(relativePath);
+            sourcePaths.put(relativePath, path);
+            return true;
         });
         traverse(syncJob.getTarget(), (path, progress) -> {
             this.progress = 0.25 + progress * 0.25;
             this.message = path.toString();
             Path relativePath = syncJob.getTarget().relativize(path);
-            boolean skip = skip(relativePath);
-            if (!runUnchecked(() -> isHidden(path)) && !skip) {
-                relativePaths.add(relativePath);
-                targetPaths.put(relativePath, path);
-                return true;
+            if (excludeFilter.test(relativePath) || runUnchecked(() -> isHidden(path))) {
+                return !isDirectory(path);
             }
-            return !isDirectory(path) || !skip;
+            relativePaths.add(relativePath);
+            targetPaths.put(relativePath, path);
+            return true;
         });
         int index = 0;
         List<Path> sortedPaths = relativePaths.stream().sorted().collect(Collectors.toList());
@@ -116,12 +123,5 @@ public class CompareFilesTask implements Task<List<FileSyncJob>> {
     @Override
     public String getMessage() {
         return message;
-    }
-
-    private static boolean skip(Path relativePath) {
-        if (relativePath.equals(IdxSyncFile.FILENAME)) {
-            return true;
-        }
-        return relativePath.equals(Path.of("$RECYCLE.BIN"));
     }
 }
