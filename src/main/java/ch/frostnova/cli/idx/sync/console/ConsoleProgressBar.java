@@ -1,14 +1,7 @@
 package ch.frostnova.cli.idx.sync.console;
 
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_BOLD;
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.CLEAR_FROM_CURSOR;
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.CURSOR_START_LINE;
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.format;
-import static ch.frostnova.cli.idx.sync.console.Console.clip;
-import static ch.frostnova.cli.idx.sync.console.Console.getLineLength;
-import static ch.frostnova.cli.idx.sync.console.Console.isModern;
-import static ch.frostnova.cli.idx.sync.console.Console.printableSize;
-import static ch.frostnova.cli.idx.sync.console.Console.removeNonPrintableCharacters;
+import static ch.frostnova.cli.idx.sync.console.AnsiEscape.*;
+import static ch.frostnova.cli.idx.sync.console.Console.*;
 
 public class ConsoleProgressBar {
 
@@ -47,7 +40,7 @@ public class ConsoleProgressBar {
         System.out.print(String.format("\r%s", line));
     }
 
-    public static void printDone(String task, String message) {
+    public void printDone(String task, String message) {
         if (isModern()) {
             System.out.println(format(task, CURSOR_START_LINE, CLEAR_FROM_CURSOR, ANSI_BOLD) + ": " + message);
         } else {

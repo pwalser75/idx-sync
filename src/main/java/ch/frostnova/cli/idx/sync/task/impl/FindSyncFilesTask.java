@@ -1,6 +1,7 @@
 package ch.frostnova.cli.idx.sync.task.impl;
 
 import ch.frostnova.cli.idx.sync.config.IdxSyncFile;
+import ch.frostnova.cli.idx.sync.filter.PathFilter;
 import ch.frostnova.cli.idx.sync.task.Task;
 
 import java.net.URL;
@@ -9,16 +10,14 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static ch.frostnova.cli.idx.sync.config.IdxSyncFile.FILENAME;
 import static ch.frostnova.cli.idx.sync.config.ObjectMappers.yaml;
 import static ch.frostnova.cli.idx.sync.io.FileSystemUtil.traverseAll;
 import static ch.frostnova.cli.idx.sync.util.Invocation.runUnchecked;
-import static java.nio.file.Files.isDirectory;
-import static java.nio.file.Files.isHidden;
-import static java.nio.file.Files.isReadable;
-import static java.nio.file.Files.isRegularFile;
+import static java.nio.file.Files.*;
 import static java.util.stream.Collectors.toSet;
 
 /**
@@ -40,6 +39,7 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
         int maxRecurseDepth = 5;
 
         Map<IdxSyncFile, Path> result = new HashMap<>();
+        Predicate<Path> defaultExcludes = PathFilter.defaultExcludes();
 
         traverseAll((path, progress) -> {
             this.progress = progress;
@@ -51,6 +51,9 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
                 return false;
             }
             if (isDirectory(path)) {
+                if (defaultExcludes.test(path)) {
+                    return false;
+                }
                 this.message = path.toString();
                 Path syncFilePath = path.resolve(FILENAME);
                 if (isRegularFile(syncFilePath) && runUnchecked(() -> isReadable(path))) {

@@ -6,7 +6,7 @@ public enum TextIcon {
 
     ROCKET("\uD83D\uDE80", ""),
     ELLIPSIS("\u2026", "..."),
-    SYNC("\uD83D\uDD04", "<->"),
+    SYNC("\uD83D\uDD04", "<>"),
     CHECK("\u2705", "*"),
     ERROR("\u274C", "[x]");
 

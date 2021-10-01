@@ -13,58 +13,22 @@ import ch.frostnova.cli.idx.sync.task.impl.SyncFilesTask;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static ch.frostnova.cli.idx.sync.SyncAction.CREATE;
-import static ch.frostnova.cli.idx.sync.SyncAction.DELETE;
-import static ch.frostnova.cli.idx.sync.SyncAction.UPDATE;
+import static ch.frostnova.cli.idx.sync.SyncAction.*;
 import static ch.frostnova.cli.idx.sync.config.IdxSyncFile.FILENAME;
 import static ch.frostnova.cli.idx.sync.config.IdxSyncFile.resolve;
 import static ch.frostnova.cli.idx.sync.config.ObjectMappers.yaml;
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_BLUE;
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_BOLD;
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_CYAN;
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_GRAY;
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_GREEN;
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_ORANGE;
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_RED;
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.ANSI_YELLOW;
-import static ch.frostnova.cli.idx.sync.console.AnsiEscape.format;
-import static ch.frostnova.cli.idx.sync.console.TextIcon.CHECK;
-import static ch.frostnova.cli.idx.sync.console.TextIcon.ERROR;
-import static ch.frostnova.cli.idx.sync.console.TextIcon.ROCKET;
-import static ch.frostnova.cli.idx.sync.console.TextIcon.SYNC;
+import static ch.frostnova.cli.idx.sync.console.AnsiEscape.*;
+import static ch.frostnova.cli.idx.sync.console.TextIcon.*;
 import static ch.frostnova.cli.idx.sync.util.ByteFormat.formatBytes;
-import static ch.frostnova.cli.idx.sync.util.Invocation.runUnchecked;
-import static java.nio.file.Files.createDirectories;
-import static java.nio.file.Files.delete;
-import static java.nio.file.Files.exists;
-import static java.nio.file.Files.isDirectory;
-import static java.nio.file.Files.isHidden;
-import static java.nio.file.Files.isWritable;
-import static java.nio.file.Files.newBufferedWriter;
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.nullsFirst;
-import static java.util.Comparator.nullsLast;
+import static java.nio.file.Files.*;
+import static java.util.Comparator.*;
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 
 public class IdxSync {
 
@@ -125,17 +89,9 @@ public class IdxSync {
     }
 
     private static Predicate<Path> createExcludeFilter(Set<String> excludeFilePatterns) {
-        Predicate<Path> excludeHidden = path -> runUnchecked(() -> isHidden(path));
-        Predicate<Path> excludeIdxSyncFile = FILENAME::equals;
-        Predicate<Path> excludeWindowsRecycleBin = Path.of("$RECYCLE.BIN")::equals;
-
-        Predicate<Path> excludeFilter = excludeIdxSyncFile.and(excludeHidden).and(excludeWindowsRecycleBin);
-        if (excludeFilePatterns != null) {
-            for (String excludeFilePattern : excludeFilePatterns) {
-                excludeFilter = excludeFilter.and(new PathFilter(excludeFilePattern));
-            }
-        }
-        return excludeFilter;
+        Predicate<Path> defaultExcludes = PathFilter.defaultExcludes();
+        Predicate<Path> excludes = PathFilter.anyOf(excludeFilePatterns);
+        return defaultExcludes.or(excludes);
     }
 
     private static void source(Path path, String name) throws Exception {

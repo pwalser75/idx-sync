@@ -30,7 +30,7 @@ public class ProgressBarStyle {
             } catch (Exception ignored) {
             }
         }
-        ConsoleProgressBar.printDone("Test", "done");
+        consoleProgressBar.printDone("Test", "done");
     }
 
     public static ProgressBarStyle autodetect() {

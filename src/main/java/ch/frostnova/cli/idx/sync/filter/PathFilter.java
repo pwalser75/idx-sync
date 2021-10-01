@@ -1,8 +1,12 @@
 package ch.frostnova.cli.idx.sync.filter;
 
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.UUID.randomUUID;
 
@@ -22,14 +26,27 @@ public class PathFilter implements Predicate<Path> {
     private final static String ANY_CHAR = "[^/]";
     private final static String ANY_PATH_SEQUENCE = "(?:[^/]+(?:/[^/]+)*/)?";
 
-    private final static String ESCAPE_CHARS = ".\\?*+:[]()";
+    private final static String ESCAPE_CHARS = ".\\?$*+-:[]()";
+
+    private final static String[] DEFAULT_EXCLUDES = {
+            "**/.idxsync",
+            "*/$RECYCLE.BIN",
+            "*/$Recycle.Bin",
+            "*/.Trash-*",
+            "*/System Volume Information",
+            "*/Windows",
+            "**/Thumbs.db",
+            ".idea",
+            ".gradle",
+            "node_modules"
+    };
 
     private final Pattern pattern;
 
     public PathFilter(String antWildcardPattern) {
-        String placeholderAnyPathSequence = randomUUID().toString();
-        String placeholderAnyCharSequence = randomUUID().toString();
-        String placeholderAnyChar = randomUUID().toString();
+        String placeholderAnyPathSequence = randomUUID().toString().replace("-", "");
+        String placeholderAnyCharSequence = randomUUID().toString().replace("-", "");
+        String placeholderAnyChar = randomUUID().toString().replace("-", "");
 
         String regex = escape(antWildcardPattern
                 .replace("**/", placeholderAnyPathSequence)
@@ -39,6 +56,24 @@ public class PathFilter implements Predicate<Path> {
                 .replace(placeholderAnyCharSequence, ANY_CHAR_SEQUENCE)
                 .replace(placeholderAnyChar, ANY_CHAR);
         pattern = Pattern.compile(regex);
+    }
+
+    public static Predicate<Path> defaultExcludes() {
+        return anyOf(DEFAULT_EXCLUDES);
+    }
+
+    public static Predicate<Path> anyOf(String... antWildcardPatterns) {
+        return anyOf(Arrays.stream(antWildcardPatterns));
+    }
+
+    public static Predicate<Path> anyOf(Collection<String> antWildcardPatterns) {
+        return anyOf(antWildcardPatterns.stream());
+    }
+
+    private static Predicate<Path> anyOf(Stream<String> antWildcardPatterns) {
+        return antWildcardPatterns
+                .map(PathFilter::new)
+                .collect(Collectors.reducing(NONE, (a, b) -> a.or(b)));
     }
 
     private static String escape(String text) {

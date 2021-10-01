@@ -3,6 +3,7 @@ package ch.frostnova.cli.idx.sync.filter;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,6 +38,8 @@ class PathFilterTest {
         assertThat(new PathFilter("*/*/test.txt").test(Path.of("foo/bla/test.txt"))).isTrue();
 
         assertThat(new PathFilter("*/test.txt").test(Path.of("foo/bla/test.txt"))).isFalse();
+
+        assertThat(new PathFilter("*/$Recycle.Bin").test(Path.of("C:/$Recycle.Bin"))).isTrue();
     }
 
     @Test
@@ -69,5 +72,44 @@ class PathFilterTest {
         assertThat(new PathFilter("bla/**/test.txt").test(Path.of("foo/bla/test.txt"))).isFalse();
 
         assertThat(new PathFilter("**/**/test.txt").test(Path.of("foo/bla/test.txt"))).isTrue();
+    }
+
+    @Test
+    void testDefaultExcludes() {
+        Predicate<Path> filter = PathFilter.defaultExcludes();
+
+        assertThat(filter.test(Path.of(""))).isFalse();
+
+        assertThat(filter.test(Path.of("/"))).isFalse();
+        assertThat(filter.test(Path.of("/$Recycle.Bin"))).isTrue();
+        assertThat(filter.test(Path.of("/System Volume Information"))).isTrue();
+
+        assertThat(filter.test(Path.of("/foo/"))).isFalse();
+        assertThat(filter.test(Path.of("/foo/"))).isFalse();
+        assertThat(filter.test(Path.of("/foo/$Recycle.Bin"))).isFalse();
+        assertThat(filter.test(Path.of("/foo/$Recycle.Bin/"))).isFalse();
+        assertThat(filter.test(Path.of("/foo/System Volume Information"))).isFalse();
+        assertThat(filter.test(Path.of("/foo/System Volume Information/"))).isFalse();
+
+        assertThat(filter.test(Path.of("C:\\"))).isFalse();
+        assertThat(filter.test(Path.of("C:\\Windows"))).isTrue();
+        assertThat(filter.test(Path.of("C:\\$Recycle.Bin"))).isTrue();
+        assertThat(filter.test(Path.of("C:\\$Recycle.Bin\\"))).isTrue();
+        assertThat(filter.test(Path.of("C:\\System Volume Information"))).isTrue();
+        assertThat(filter.test(Path.of("C:\\System Volume Information\\"))).isTrue();
+
+        assertThat(filter.test(Path.of("C:/"))).isFalse();
+        assertThat(filter.test(Path.of("C:/Windows"))).isTrue();
+        assertThat(filter.test(Path.of("C:/$Recycle.Bin"))).isTrue();
+        assertThat(filter.test(Path.of("C:/$Recycle.Bin/"))).isTrue();
+        assertThat(filter.test(Path.of("C:/System Volume Information"))).isTrue();
+        assertThat(filter.test(Path.of("C:/System Volume Information/"))).isTrue();
+
+        assertThat(filter.test(Path.of("C:\\foo"))).isFalse();
+        assertThat(filter.test(Path.of("C:\\foo\\"))).isFalse();
+        assertThat(filter.test(Path.of("C:\\foo\\$Recycle.Bin"))).isFalse();
+        assertThat(filter.test(Path.of("C:\\foo\\$Recycle.Bin\\"))).isFalse();
+        assertThat(filter.test(Path.of("C:\\foo\\System Volume Information"))).isFalse();
+        assertThat(filter.test(Path.of("C:\\foo\\System Volume Information\\"))).isFalse();
     }
 }
