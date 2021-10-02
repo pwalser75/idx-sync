@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Phaser;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -22,24 +23,40 @@ public final class FileSystemUtil {
 
     }
 
-    public static void traverseAll(FileVisitor fileVisitor) {
-        traverse(StreamSupport.stream(FileSystems.getDefault().getRootDirectories().spliterator(), false), fileVisitor);
+    public static void traverseAll(FileVisitor fileVisitor, Consumer<Double> progressConsumer) {
+        traverse(StreamSupport.stream(FileSystems.getDefault().getRootDirectories().spliterator(), false), fileVisitor, progressConsumer);
     }
 
-    public static void traverse(Path path, FileVisitor fileVisitor) {
-        traverse(Stream.of(path), fileVisitor);
+    public static void traverse(Path path, FileVisitor fileVisitor, Consumer<Double> progressConsumer) {
+        traverse(Stream.of(path), fileVisitor, progressConsumer);
     }
 
-    public static void traverse(Stream<Path> paths, FileVisitor fileVisitor) {
+    public static void traverse(Stream<Path> pathStream, FileVisitor fileVisitor, Consumer<Double> progressConsumer) {
+        traverse(pathStream.collect(toList()), fileVisitor, progressConsumer);
+    }
+
+    private static void traverse(List<Path> paths, FileVisitor fileVisitor, Consumer<Double> progressConsumer) {
+        if (paths.isEmpty()) {
+            return;
+        }
+        double weight = 1d / paths.size();
+
+        ProgressCollector progressCollector = new ProgressCollector();
+        Consumer<Double> doneConsumer = progress -> {
+            progressCollector.done(progress);
+            progressConsumer.accept(progressCollector.getTotalProgress());
+        };
+
         ExecutorService executorService = ForkJoinPool.commonPool();
         Phaser phaser = new Phaser(1);
         paths.forEach(path -> {
             phaser.register();
             executorService.submit(() -> {
-                process(executorService, phaser, path, fileVisitor);
+                process(executorService, phaser, path, fileVisitor, weight, doneConsumer);
             });
         });
         phaser.arriveAndAwaitAdvance();
+        progressConsumer.accept(1d);
     }
 
     public static void traverseAll(ProgressFileVisitor fileVisitor) {
@@ -82,25 +99,45 @@ public final class FileSystemUtil {
         return true;
     }
 
-    private static void process(ExecutorService executorService, Phaser phaser, Path path, FileVisitor fileVisitor) {
+    private static void process(ExecutorService executorService, Phaser phaser, Path path, FileVisitor fileVisitor,
+                                double weight, Consumer<Double> doneConsumer) {
         try {
             boolean recurse = fileVisitor.visit(path);
             if (Files.isDirectory(path) && recurse) {
                 try {
-                    Files.list(path).forEach(child -> {
-                        phaser.register();
-                        executorService.submit(() -> {
-                            process(executorService, phaser, child, fileVisitor);
+                    List<Path> paths = list(path).collect(toList());
+                    if (!paths.isEmpty()) {
+                        double childWeight = weight / paths.size();
+                        paths.forEach(child -> {
+                            phaser.register();
+                            executorService.submit(() -> {
+                                process(executorService, phaser, child, fileVisitor, childWeight, doneConsumer);
+                            });
                         });
-                    });
+                        return;
+                    }
                 } catch (AccessDeniedException ignored) {
                     //
                 } catch (IOException ex) {
                     System.err.println(ex.getClass().getSimpleName() + ":" + ex.getMessage());
                 }
             }
+            doneConsumer.accept(weight);
         } finally {
             phaser.arriveAndDeregister();
+        }
+    }
+
+    private static class ProgressCollector {
+
+        private volatile double totalProgress;
+
+        void done(double progress) {
+            totalProgress += progress;
+        }
+
+        public double getTotalProgress() {
+            return totalProgress;
         }
     }
 }

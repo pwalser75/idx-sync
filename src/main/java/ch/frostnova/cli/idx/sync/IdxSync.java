@@ -14,6 +14,7 @@ import java.io.Writer;
 import java.nio.file.Path;
 import java.text.Collator;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -150,7 +151,7 @@ public class IdxSync {
         Comparator<IdxSyncFile> syncFileComparator = comparing(IdxSyncFile::getSourceFolderId, nullsFirst(naturalOrder()))
                 .thenComparing(IdxSyncFile::getFolderName, nullsLast(Collator.getInstance()));
 
-        Map<IdxSyncFile, Path> syncFilePaths = taskRunner.run(new FindSyncFilesTask());
+        Map<IdxSyncFile, Path> syncFilePaths = new ConcurrentHashMap<>(taskRunner.run(new FindSyncFilesTask()));
         if (syncFilePaths.isEmpty()) {
             System.out.print(String.format("No %s files found.\n", FILENAME));
         } else {

@@ -8,22 +8,16 @@ public class FileSyncJob {
     private final Path targetPath;
     private final SyncAction syncAction;
     private final long fileSize;
-    private final String reason;
 
     public FileSyncJob(Path sourcePath, Path targetPath, SyncAction syncAction) {
-        this(sourcePath, targetPath, syncAction, 0, null);
+        this(sourcePath, targetPath, syncAction, 0);
     }
 
     public FileSyncJob(Path sourcePath, Path targetPath, SyncAction syncAction, long fileSize) {
-        this(sourcePath, targetPath, syncAction, fileSize, null);
-    }
-
-    public FileSyncJob(Path sourcePath, Path targetPath, SyncAction syncAction, long fileSize, String reason) {
         this.sourcePath = sourcePath;
         this.targetPath = targetPath;
         this.syncAction = syncAction;
         this.fileSize = fileSize;
-        this.reason = reason;
     }
 
     public Path getSourcePath() {
@@ -42,10 +36,6 @@ public class FileSyncJob {
         return fileSize;
     }
 
-    public String getReason() {
-        return reason;
-    }
-
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -57,10 +47,6 @@ public class FileSyncJob {
         if (fileSize > 0) {
             builder.append(", ");
             builder.append(fileSize + " bytes");
-        }
-        if (reason != null) {
-            builder.append(", ");
-            builder.append(reason);
         }
         return builder.toString();
     }

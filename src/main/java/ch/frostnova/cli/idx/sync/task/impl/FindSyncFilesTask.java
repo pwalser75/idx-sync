@@ -26,7 +26,7 @@ import static java.util.stream.Collectors.toSet;
 public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
 
     private final static Set<Path> ignored = Stream.of("/dev", "/proc").map(Paths::get).collect(toSet());
-    private double progress;
+    private volatile double progress;
     private String message;
 
     @Override
@@ -41,9 +41,7 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
         Map<IdxSyncFile, Path> result = new HashMap<>();
         Predicate<Path> defaultExcludes = PathFilter.defaultExcludes();
 
-        traverseAll((path, progress) -> {
-            this.progress = progress;
-
+        traverseAll(path -> {
             if (ignored.contains(path)) {
                 return false;
             }
@@ -68,7 +66,7 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
                 return runUnchecked(() -> path.getParent() == null || !isHidden(path));
             }
             return true;
-        });
+        }, progress -> this.progress = progress);
         return result;
     }
 

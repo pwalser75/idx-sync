@@ -92,9 +92,7 @@ public class CompareFilesTask implements Task<List<FileSyncJob>> {
                 Duration deltaTime = between(sourceLastModified, targetLastModified);
 
                 if (!Objects.equals(sourceFileSize, targetFileSize) || deltaTime.compareTo(Duration.ofSeconds(1)) > 0) {
-                    String info = String.format("%s: %s?=%s, %s?=%s, %s", relativePath,
-                            sourceFileSize, targetFileSize, sourceLastModified, targetLastModified, deltaTime);
-                    result.add(new FileSyncJob(sourcePath, targetPath, UPDATE, sourceFileSize, info));
+                    result.add(new FileSyncJob(sourcePath, targetPath, UPDATE, sourceFileSize));
                 }
             }
             index++;

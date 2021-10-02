@@ -7,6 +7,10 @@ public class ConsoleProgressBar {
 
     private final ProgressBarStyle progressBarStyle;
 
+    public ConsoleProgressBar() {
+        this(ProgressBarStyle.autodetect());
+    }
+
     public ConsoleProgressBar(ProgressBarStyle progressBarStyle) {
         this.progressBarStyle = progressBarStyle;
     }
