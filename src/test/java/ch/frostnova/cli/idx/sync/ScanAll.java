@@ -1,18 +1,11 @@
 package ch.frostnova.cli.idx.sync;
 
-import ch.frostnova.cli.idx.sync.console.ConsoleProgressBar;
-import ch.frostnova.cli.idx.sync.console.ProgressBarStyle;
 import ch.frostnova.cli.idx.sync.filter.PathFilter;
 import ch.frostnova.cli.idx.sync.io.FileSystemUtil;
-import ch.frostnova.cli.idx.sync.util.Invocation;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
 public class ScanAll {
@@ -21,18 +14,26 @@ public class ScanAll {
 
         Predicate<Path> filter = PathFilter.NONE;
 
-        ConsoleProgressBar consoleProgressBar = new ConsoleProgressBar(ProgressBarStyle.autodetect());
+        long time = System.nanoTime();
+        AtomicLong count = new AtomicLong();
 
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("files.txt"), StandardCharsets.UTF_8))) {
-            FileSystemUtil.traverseAll((path, progress) -> {
-                consoleProgressBar.printProgress(progress, "Scan", path.toString());
-                if (filter.test(path)) {
-                    return !Files.isDirectory(path);
-                }
-                Invocation.runUnchecked(() -> writer.write(path + "\n"));
-                return true;
-            });
-        }
-        consoleProgressBar.printDone("Scan", "done");
+        // Done in 0.95 sec, visited 92723 file
+        // Done in 0.94 sec, visited 92723 files
+        /*
+        FileSystemUtil.traverse(Path.of("W:/"), (path, progress) -> {
+            count.incrementAndGet();
+            return true;
+        });
+*/
+        // Done in 0.33 sec, visited 92723 files
+        // Done in 0.34 sec, visited 92723 files
+
+        FileSystemUtil.traverseAll(path -> {
+            count.incrementAndGet();
+            return true;
+        });
+
+        time = System.nanoTime() - time;
+        System.out.printf("Done in %.2f sec, visited %d files", time * 1e-9, count.get());
     }
 }

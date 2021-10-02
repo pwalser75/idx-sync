@@ -5,11 +5,10 @@ import java.nio.file.Path;
 public interface FileVisitor {
 
     /**
-     * Visit a file. Return if traversing should continue on the same level (if file) or into children (if directory).
+     * Visit a file. For a directory, return if traversal should recurse into its content.
      *
-     * @param path     current path
-     * @param progress progress of the file visiting operation
-     * @return continue traverse
+     * @param path current path
+     * @return recurse (if directory, ignored if file)
      */
-    boolean visit(Path path, double progress);
+    boolean visit(Path path);
 }
