@@ -9,14 +9,26 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static ch.frostnova.cli.idx.sync.SyncAction.*;
+import static ch.frostnova.cli.idx.sync.SyncAction.CREATE;
+import static ch.frostnova.cli.idx.sync.SyncAction.DELETE;
+import static ch.frostnova.cli.idx.sync.SyncAction.UPDATE;
 import static ch.frostnova.cli.idx.sync.io.FileSystemUtil.traverse;
 import static ch.frostnova.cli.idx.sync.util.Invocation.runUnchecked;
-import static java.nio.file.Files.*;
+import static java.nio.file.Files.isDirectory;
+import static java.nio.file.Files.isReadable;
+import static java.nio.file.Files.isRegularFile;
+import static java.nio.file.Files.readAttributes;
+import static java.nio.file.Files.size;
 import static java.time.Duration.between;
 
 /**
