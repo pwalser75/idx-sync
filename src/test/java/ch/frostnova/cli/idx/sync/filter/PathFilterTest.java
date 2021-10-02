@@ -89,27 +89,20 @@ class PathFilterTest {
         assertThat(filter.test(Path.of("/foo/$Recycle.Bin"))).isFalse();
         assertThat(filter.test(Path.of("/foo/$Recycle.Bin/"))).isFalse();
         assertThat(filter.test(Path.of("/foo/System Volume Information"))).isFalse();
-        assertThat(filter.test(Path.of("/foo/System Volume Information/"))).isFalse();
 
         assertThat(filter.test(Path.of("C:\\"))).isFalse();
         assertThat(filter.test(Path.of("C:\\Windows"))).isTrue();
         assertThat(filter.test(Path.of("C:\\$Recycle.Bin"))).isTrue();
-        assertThat(filter.test(Path.of("C:\\$Recycle.Bin\\"))).isTrue();
         assertThat(filter.test(Path.of("C:\\System Volume Information"))).isTrue();
-        assertThat(filter.test(Path.of("C:\\System Volume Information\\"))).isTrue();
 
         assertThat(filter.test(Path.of("C:/"))).isFalse();
         assertThat(filter.test(Path.of("C:/Windows"))).isTrue();
         assertThat(filter.test(Path.of("C:/$Recycle.Bin"))).isTrue();
-        assertThat(filter.test(Path.of("C:/$Recycle.Bin/"))).isTrue();
         assertThat(filter.test(Path.of("C:/System Volume Information"))).isTrue();
-        assertThat(filter.test(Path.of("C:/System Volume Information/"))).isTrue();
 
         assertThat(filter.test(Path.of("C:\\foo"))).isFalse();
         assertThat(filter.test(Path.of("C:\\foo\\"))).isFalse();
         assertThat(filter.test(Path.of("C:\\foo\\$Recycle.Bin"))).isFalse();
-        assertThat(filter.test(Path.of("C:\\foo\\$Recycle.Bin\\"))).isFalse();
         assertThat(filter.test(Path.of("C:\\foo\\System Volume Information"))).isFalse();
-        assertThat(filter.test(Path.of("C:\\foo\\System Volume Information\\"))).isFalse();
     }
 }
