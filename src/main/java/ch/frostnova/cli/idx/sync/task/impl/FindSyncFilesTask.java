@@ -59,6 +59,7 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
                         URL url = syncFilePath.toUri().toURL();
                         IdxSyncFile syncFile = yaml().readValue(url, IdxSyncFile.class);
                         result.put(syncFile, syncFilePath);
+                        return false;
                     } catch (Exception ignored) {
 
                     }

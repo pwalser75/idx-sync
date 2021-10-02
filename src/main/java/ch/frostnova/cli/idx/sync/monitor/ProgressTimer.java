@@ -32,7 +32,7 @@ public class ProgressTimer {
         if (deltaProgress > 0.01 || deltaTimeNs > 5e9) {
 
             long newEtaEndTimeNs = (long) (nanoTimeNow + deltaTimeNs * (1 - progress) / deltaProgress);
-            double newEtaWeight = 0.2;
+            double newEtaWeight = 0.1;
             etaEndTimeNs = etaEndTimeNs != null ? (long) (etaEndTimeNs * (1 - newEtaWeight) + newEtaEndTimeNs * newEtaWeight) : newEtaEndTimeNs;
 
             lastProgress = progress;
