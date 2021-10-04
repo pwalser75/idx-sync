@@ -11,7 +11,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 import static ch.frostnova.cli.idx.sync.SyncAction.*;
@@ -69,8 +68,7 @@ public class CompareFilesTask implements Task<List<FileSyncJob>> {
             targetPaths.put(relativePath, path);
             return true;
         });
-        double weigth = 0.5 / relativePaths.size();
-        AtomicInteger count = new AtomicInteger();
+        double weight = 0.5 / relativePaths.size();
         relativePaths.stream().sorted().parallel().forEach(relativePath -> {
             Invocation.runUnchecked(() -> {
                 this.message = relativePath.toString();
@@ -95,7 +93,7 @@ public class CompareFilesTask implements Task<List<FileSyncJob>> {
                         result.add(new FileSyncJob(sourcePath, targetPath, UPDATE, sourceFileSize));
                     }
                 }
-                this.progress += weigth;
+                this.progress += weight;
             });
         });
 
