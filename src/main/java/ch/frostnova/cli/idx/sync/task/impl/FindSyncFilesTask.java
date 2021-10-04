@@ -17,7 +17,10 @@ import static ch.frostnova.cli.idx.sync.config.IdxSyncFile.FILENAME;
 import static ch.frostnova.cli.idx.sync.config.ObjectMappers.yaml;
 import static ch.frostnova.cli.idx.sync.io.FileSystemUtil.traverseAll;
 import static ch.frostnova.cli.idx.sync.util.Invocation.runUnchecked;
-import static java.nio.file.Files.*;
+import static java.nio.file.Files.isDirectory;
+import static java.nio.file.Files.isHidden;
+import static java.nio.file.Files.isReadable;
+import static java.nio.file.Files.isRegularFile;
 import static java.util.stream.Collectors.toSet;
 
 /**
@@ -59,7 +62,6 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
                         URL url = syncFilePath.toUri().toURL();
                         IdxSyncFile syncFile = yaml().readValue(url, IdxSyncFile.class);
                         result.put(syncFile, syncFilePath);
-                        return false;
                     } catch (Exception ignored) {
 
                     }
