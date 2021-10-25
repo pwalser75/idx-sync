@@ -29,10 +29,10 @@ public class ProgressTimer {
         double deltaProgress = progress - lastProgress;
         long deltaTimeNs = nanoTimeNow - lastProgressTime;
 
-        if (deltaProgress > 0.01 || deltaTimeNs > 5e9) {
+        if (deltaProgress > 0.01 && deltaTimeNs > 1e9) {
 
             long newEtaEndTimeNs = (long) (nanoTimeNow + deltaTimeNs * (1 - progress) / deltaProgress);
-            double newEtaWeight = 0.1;
+            double newEtaWeight = 0.5;
             etaEndTimeNs = etaEndTimeNs != null ? (long) (etaEndTimeNs * (1 - newEtaWeight) + newEtaEndTimeNs * newEtaWeight) : newEtaEndTimeNs;
 
             lastProgress = progress;
