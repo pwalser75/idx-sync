@@ -9,6 +9,7 @@ import ch.frostnova.cli.idx.sync.task.TaskRunner;
 import ch.frostnova.cli.idx.sync.task.impl.CompareFilesTask;
 import ch.frostnova.cli.idx.sync.task.impl.FindSyncFilesTask;
 import ch.frostnova.cli.idx.sync.task.impl.SyncFilesTask;
+import ch.frostnova.cli.idx.sync.util.ByteFormat;
 
 import java.io.Writer;
 import java.nio.file.Path;
@@ -204,6 +205,8 @@ public class IdxSync {
                 .filter(n -> n > 0)
                 .map(n -> String.format("%s files created", format(n, ANSI_BOLD, ANSI_GREEN)))
                 .ifPresent(changes::add);
+
+
         Optional.ofNullable(syncActionsPerType.get(UPDATE))
                 .filter(n -> n > 0)
                 .map(n -> String.format("%s files updated", format(n, ANSI_BOLD, ANSI_BLUE)))
@@ -216,6 +219,22 @@ public class IdxSync {
 
         if (!changes.isEmpty()) {
             System.out.println("Changes since last sync: " + changes.stream().collect(joining(", ")));
+            System.out.println();
+            fileSyncJobs.stream().filter(f -> f.getSyncAction() == CREATE).forEach(f -> {
+                String output = String.format("+ %s\n  -> %s, %s", f.getSourcePath(), f.getTargetPath(), formatBytes(f.getFileSize()));
+                System.out.println(format(output, ANSI_BOLD, ANSI_GREEN));
+            });
+
+            fileSyncJobs.stream().filter(f -> f.getSyncAction() == UPDATE).forEach(f -> {
+                String output = String.format("* %s\n  -> %s, %s", f.getSourcePath(), f.getTargetPath(), formatBytes(f.getFileSize()));
+                System.out.println(format(output, ANSI_BOLD, ANSI_BLUE));
+            });
+
+            fileSyncJobs.stream().filter(f -> f.getSyncAction() == DELETE).forEach(f -> {
+                String output = String.format("- %s\n  -> %s, %s", f.getSourcePath(), f.getTargetPath(), formatBytes(f.getFileSize()));
+                System.out.println(format(output, ANSI_BOLD, ANSI_ORANGE));
+            });
+
         } else {
             System.out.println("No changes since last sync.");
         }
