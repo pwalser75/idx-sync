@@ -221,17 +221,17 @@ public class IdxSync {
             System.out.println("Changes since last sync: " + changes.stream().collect(joining(", ")));
             System.out.println();
             fileSyncJobs.stream().filter(f -> f.getSyncAction() == CREATE).forEach(f -> {
-                String output = String.format("+ %s\n  -> %s, %s", f.getSourcePath(), f.getTargetPath(), formatBytes(f.getFileSize()));
+                String output = String.format("+ %s [%s]", f.getSourcePath(), formatBytes(f.getFileSize()));
                 System.out.println(format(output, ANSI_BOLD, ANSI_GREEN));
             });
 
             fileSyncJobs.stream().filter(f -> f.getSyncAction() == UPDATE).forEach(f -> {
-                String output = String.format("* %s\n  -> %s, %s", f.getSourcePath(), f.getTargetPath(), formatBytes(f.getFileSize()));
+                String output = String.format("* %s [%s]", f.getSourcePath(), formatBytes(f.getFileSize()));
                 System.out.println(format(output, ANSI_BOLD, ANSI_BLUE));
             });
 
             fileSyncJobs.stream().filter(f -> f.getSyncAction() == DELETE).forEach(f -> {
-                String output = String.format("- %s\n  -> %s, %s", f.getSourcePath(), f.getTargetPath(), formatBytes(f.getFileSize()));
+                String output = String.format("- %s", f.getSourcePath());
                 System.out.println(format(output, ANSI_BOLD, ANSI_ORANGE));
             });
 
