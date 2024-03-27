@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
-    id "com.github.ben-manes.versions" version "0.39.0"
-    id "com.github.johnrengelman.shadow" version "7.0.0"
+    id "com.github.ben-manes.versions" version "0.51.0"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 
 description = 'Idx Sync CLI'
@@ -15,10 +15,10 @@ ext {
     dateTimeFormat = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     buildDate = java.time.LocalDateTime.now()
 
-    jacksonVersion = '2.12.+'
-    junitVersion = '5.8.+'
-    assertjVersion = '3.21.+'
-    mockitoVersion = '3.12.+'
+    jacksonVersion = '2.17.+'
+    junitVersion = '5.10.+'
+    assertjVersion = '3.25.+'
+    mockitoVersion = '5.11.+'
     slf4jVersion = '1.7.+'
     logbackVersion = '1.2.+'
     jLineVersion = '3.20.0'
@@ -70,8 +70,8 @@ jar {
     }
 }
 shadowJar {
-    baseName = shadowJarBaseName
-    classifier = ''
+    archiveBaseName = shadowJarBaseName
+    archiveClassifier = ''
     archiveVersion = ''
 }
 repositories {

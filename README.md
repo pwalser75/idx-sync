@@ -41,8 +41,10 @@ The source and target folders are marked by adding an `.idxSyncFile` in **YAML f
 folder-id: 4ec2840b-e80b-4498-a2cd-820f283ba2e0
 folder-name: BACKUP Dev
 exclude-patterns:
-  - '**/node-modules'
-  - '**/.git'
+- '**/node-modules'
+- '**/.git'
+- '$RECYCLE.BIN'
+- 'System Volume Information'
 include-hidden: false
 tags:
   - BACKUP

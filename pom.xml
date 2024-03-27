@@ -16,10 +16,10 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
 
-        <jacksonVersion>2.11.0</jacksonVersion>
-        <junitVersion>5.8.1</junitVersion>
-        <assertjVersion>3.21.0</assertjVersion>
-        <mockitoVersion>2.23.4</mockitoVersion>
+        <jacksonVersion>2.17.0</jacksonVersion>
+        <junitVersion>5.10.2</junitVersion>
+        <assertjVersion>3.25.3</assertjVersion>
+        <mockitoVersion>5.11.0</mockitoVersion>
 
     </properties>
 

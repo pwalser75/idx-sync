@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.UUID.randomUUID;
@@ -27,7 +28,11 @@ public class IdxSyncFileTest {
         IdxSyncFile idxSyncFile = new IdxSyncFile();
         idxSyncFile.setFolderId(randomUUID().toString());
         idxSyncFile.setFolderName("BACKUP Dev");
-        idxSyncFile.setExcludePatterns(Stream.of("**/.git", "**/node-modules").collect(toSet()));
+        idxSyncFile.setExcludePatterns(Set.of(
+                "**/node-modules",
+                "**/.git",
+                "$RECYCLE.BIN",
+                "System Volume Information"));
         idxSyncFile.setIncludeHidden(true);
         idxSyncFile.setSourceFolderId(randomUUID().toString());
         idxSyncFile.setTags(Stream.of("DEV", "BACKUP", "DAILY").collect(toSet()));
