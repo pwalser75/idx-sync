@@ -14,7 +14,7 @@ public final class ByteFormat {
         if (value < 1000) {
             return String.format("%.0f %s", value, Unit.values()[0]);
         }
-        for (Unit unit : Unit.values()) {
+        for (var unit : Unit.values()) {
             if (value < 1000) {
                 return String.format("%.1f %s", value, unit);
             }

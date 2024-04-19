@@ -3,7 +3,6 @@ package ch.frostnova.cli.idx.sync.filter;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
-import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,6 +39,9 @@ class PathFilterTest {
         assertThat(new PathFilter("*/test.txt").test(Path.of("foo/bla/test.txt"))).isFalse();
 
         assertThat(new PathFilter("*/$Recycle.Bin").test(Path.of("C:/$Recycle.Bin"))).isTrue();
+        assertThat(new PathFilter("**/node_modules/**/*.js").test(Path.of("/media/colin/workspace/demo-game/node_modules/phaser/src/renderer/webgl/shaders/FXDisplacement-frag.js"))).isTrue();
+        assertThat(new PathFilter("**/node_modules/**").test(Path.of("/media/colin/workspace/demo-game/node_modules/phaser/src/renderer/webgl/shaders/FXDisplacement-frag.js"))).isTrue();
+        assertThat(new PathFilter("**/node_modules/**/.js").test(Path.of("/media/colin/workspace/demo-game/node_modules/phaser/src/renderer/webgl/shaders/FXDisplacement-frag.js"))).isFalse();
     }
 
     @Test
@@ -64,7 +66,7 @@ class PathFilterTest {
 
     @Test
     void testWildcardAntPath() {
-        assertThat(new PathFilter("**/test.txt").test(Path.of("test.txt"))).isTrue();
+        assertThat(new PathFilter("**/test.txt").test(Path.of("test.txt"))).isFalse();
         assertThat(new PathFilter("**/test.txt").test(Path.of("foo/test.txt"))).isTrue();
         assertThat(new PathFilter("**/test.txt").test(Path.of("foo/bla/test.txt"))).isTrue();
 
@@ -76,7 +78,7 @@ class PathFilterTest {
 
     @Test
     void testDefaultExcludes() {
-        Predicate<Path> filter = PathFilter.defaultExcludes();
+        var filter = PathFilter.defaultExcludes();
 
         assertThat(filter.test(Path.of(""))).isFalse();
 

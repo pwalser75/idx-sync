@@ -29,7 +29,7 @@ public class BatchTask<R> implements Task<List<R>> {
 
     @Override
     public List<R> run() throws Exception {
-        for (Task<R> task : tasks) {
+        for (var task : tasks) {
             current = task;
             results.add(current.run());
             index++;

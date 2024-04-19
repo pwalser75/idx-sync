@@ -18,7 +18,7 @@ public final class Console {
     }
 
     public static boolean isModern() {
-        String operatingSystem = System.getProperty("os.name", "unknown").toLowerCase(Locale.ROOT);
+        var operatingSystem = System.getProperty("os.name", "unknown").toLowerCase(Locale.ROOT);
         return (operatingSystem.contains("linux") || operatingSystem.contains("unix") || operatingSystem.contains("mac"));
     }
 
@@ -39,8 +39,8 @@ public final class Console {
     }
 
     public static String clip(String text, int length) {
-        String ellipis = ELLIPSIS.toString();
-        int elipsisSize = printableSize(ellipis);
+        var ellipis = ELLIPSIS.toString();
+        var elipsisSize = printableSize(ellipis);
         if (length < 1) {
             return "";
         }

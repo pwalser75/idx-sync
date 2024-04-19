@@ -25,14 +25,14 @@ public class ProgressTimer {
     }
 
     public void progress(double progress) {
-        long nanoTimeNow = nanoTime();
-        double deltaProgress = progress - lastProgress;
-        long deltaTimeNs = nanoTimeNow - lastProgressTime;
+        var nanoTimeNow = nanoTime();
+        var deltaProgress = progress - lastProgress;
+        var deltaTimeNs = nanoTimeNow - lastProgressTime;
 
         if (deltaProgress > 0.01 && deltaTimeNs > 1e9) {
 
-            long newEtaEndTimeNs = (long) (nanoTimeNow + deltaTimeNs * (1 - progress) / deltaProgress);
-            double newEtaWeight = 0.5;
+            var newEtaEndTimeNs = (long) (nanoTimeNow + deltaTimeNs * (1 - progress) / deltaProgress);
+            var newEtaWeight = 0.5;
             etaEndTimeNs = etaEndTimeNs != null ? (long) (etaEndTimeNs * (1 - newEtaWeight) + newEtaEndTimeNs * newEtaWeight) : newEtaEndTimeNs;
 
             lastProgress = progress;
@@ -44,14 +44,14 @@ public class ProgressTimer {
     @Override
     public String toString() {
 
-        long nanoTimeNow = nanoTime();
+        var nanoTimeNow = nanoTime();
 
-        double elapsedTimeSec = (nanoTimeNow - startTimeNs) * NANO;
+        var elapsedTimeSec = (nanoTimeNow - startTimeNs) * NANO;
 
         if (elapsedTimeSec < 1 || etaEndTimeNs == null) {
             return format("%s", formatTime(elapsedTimeSec));
         }
-        double remainingTimeSec = Math.max(0, (etaEndTimeNs - nanoTimeNow) * NANO);
+        var remainingTimeSec = Math.max(0, (etaEndTimeNs - nanoTimeNow) * NANO);
         if (remainingTimeSec < 1) {
             return format("%s", formatTime(elapsedTimeSec));
         }

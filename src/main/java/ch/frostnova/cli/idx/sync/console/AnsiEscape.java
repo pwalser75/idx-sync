@@ -40,7 +40,7 @@ public enum AnsiEscape {
      * @return ansi-formatted text
      */
     public static String format(Object object, AnsiEscape... style) {
-        String text = String.valueOf(object);
+        var text = String.valueOf(object);
         if (!isModern()) {
             return text;
         }

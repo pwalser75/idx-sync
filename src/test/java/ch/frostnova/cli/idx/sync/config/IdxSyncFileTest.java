@@ -14,18 +14,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class IdxSyncFileTest {
 
     private static void shouldReadWriteSyncFile(ObjectMapper objectMapper) throws IOException {
-        IdxSyncFile testData = testData();
+        var testData = testData();
 
-        String serialized = objectMapper.writeValueAsString(testData);
+        var serialized = objectMapper.writeValueAsString(testData);
         System.out.println(serialized);
 
-        IdxSyncFile deserialized = objectMapper.readValue(serialized, IdxSyncFile.class);
+        var deserialized = objectMapper.readValue(serialized, IdxSyncFile.class);
 
         assertThat(deserialized).usingRecursiveComparison().isEqualTo(testData);
     }
 
     private static IdxSyncFile testData() {
-        IdxSyncFile idxSyncFile = new IdxSyncFile();
+        var idxSyncFile = new IdxSyncFile();
         idxSyncFile.setFolderId(randomUUID().toString());
         idxSyncFile.setFolderName("BACKUP Dev");
         idxSyncFile.setExcludePatterns(Set.of(

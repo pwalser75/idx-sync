@@ -20,10 +20,10 @@ public class ProgressBarStyle {
     }
 
     public static void main(String[] args) {
-        ProgressBarStyle style = ProgressBarStyle.autodetect();
-        ConsoleProgressBar consoleProgressBar = new ConsoleProgressBar(style);
-        int n = 531;
-        for (int i = 0; i <= n; i++) {
+        var style = ProgressBarStyle.autodetect();
+        var consoleProgressBar = new ConsoleProgressBar(style);
+        var n = 531;
+        for (var i = 0; i <= n; i++) {
             consoleProgressBar.printProgress(i, n, "Test", i + "/" + n);
             try {
                 Thread.sleep(5000 / n);
@@ -34,7 +34,7 @@ public class ProgressBarStyle {
     }
 
     public static ProgressBarStyle autodetect() {
-        String operatingSystem = System.getProperty("os.name", "unknown").toLowerCase(Locale.ROOT);
+        var operatingSystem = System.getProperty("os.name", "unknown").toLowerCase(Locale.ROOT);
         if (operatingSystem.contains("linux") || operatingSystem.contains("unix") || operatingSystem.contains("mac")) {
             return ansi();
         }

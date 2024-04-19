@@ -49,8 +49,8 @@ public class ConsoleProgressMonitor implements ProgressMonitor {
         }
         progressTimer = null;
 
-        long nanoTimeNow = nanoTime();
-        double elapsedSec = 1e-9 * (nanoTimeNow - startTimeSystemNs);
+        var nanoTimeNow = nanoTime();
+        var elapsedSec = 1e-9 * (nanoTimeNow - startTimeSystemNs);
 
         consoleProgressBar.printDone(taskName, message + " (in " + formatTime(elapsedSec) + ")");
     }

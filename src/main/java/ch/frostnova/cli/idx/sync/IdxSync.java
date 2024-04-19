@@ -15,7 +15,6 @@ import java.nio.file.Path;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -77,7 +76,7 @@ public class IdxSync {
             run();
         } else {
             try {
-                String command = args[0];
+                var command = args[0];
                 if (command.equals("run") && args.length == 1) {
                     run();
                 } else if (command.equals("scan") && args.length == 1) {
@@ -124,14 +123,14 @@ public class IdxSync {
     }
 
     private static Predicate<Path> createExcludeFilter(Set<String> excludeFilePatterns) {
-        Predicate<Path> defaultExcludes = PathFilter.defaultExcludes();
-        Predicate<Path> excludes = PathFilter.anyOf(excludeFilePatterns);
+        var defaultExcludes = PathFilter.defaultExcludes();
+        var excludes = PathFilter.anyOf(excludeFilePatterns);
         return defaultExcludes.or(excludes);
     }
 
     private static void source(Path path, String name) throws Exception {
         checkWriteableDir(path);
-        IdxSyncFile syncFile = new IdxSyncFile();
+        var syncFile = new IdxSyncFile();
         syncFile.setFolderName(name);
         syncFile.setFolderId(UUID.randomUUID().toString());
         syncFile.setIncludeHidden(true);
@@ -150,7 +149,7 @@ public class IdxSync {
     private static void target(Path path, String sourceFolderId) throws Exception {
         createDirectories(path);
         checkWriteableDir(path);
-        IdxSyncFile syncFile = new IdxSyncFile();
+        var syncFile = new IdxSyncFile();
         syncFile.setFolderId(UUID.randomUUID().toString());
         syncFile.setSourceFolderId(sourceFolderId);
         try (Writer writer = newBufferedWriter(resolve(path))) {
@@ -161,7 +160,7 @@ public class IdxSync {
 
     private static void remove(Path path) throws Exception {
         checkWriteableDir(path);
-        Path syncFilePath = resolve(path);
+        var syncFilePath = resolve(path);
         if (exists(syncFilePath)) {
             delete(syncFilePath);
             System.out.println("Removed .idxsync file from " + path);
@@ -184,7 +183,7 @@ public class IdxSync {
 
         List<SyncJob> result = new ArrayList<>();
 
-        Comparator<IdxSyncFile> syncFileComparator = comparing(IdxSyncFile::getSourceFolderId, nullsFirst(naturalOrder()))
+        var syncFileComparator = comparing(IdxSyncFile::getSourceFolderId, nullsFirst(naturalOrder()))
                 .thenComparing(IdxSyncFile::getFolderName, nullsLast(Collator.getInstance()));
 
         Map<IdxSyncFile, Path> syncFilePaths = new ConcurrentHashMap<>(taskRunner.run(new FindSyncFilesTask()));
@@ -193,7 +192,7 @@ public class IdxSync {
         } else {
             System.out.print(String.format("Found following %s files:\n", FILENAME));
             syncFilePaths.keySet().stream().sorted(syncFileComparator).forEach(syncFile -> {
-                Path path = syncFilePaths.get(syncFile);
+                var path = syncFilePaths.get(syncFile);
                 if (syncFile.getSourceFolderId() != null) {
                     System.out.print(String.format("- %s %s: source = %s in %s\n", SYNC, format(syncFile.getFolderId(), ANSI_BOLD, ANSI_CYAN), format(syncFile.getSourceFolderId(), ANSI_CYAN), path.getParent()));
                 } else {
@@ -202,9 +201,9 @@ public class IdxSync {
             });
         }
 
-        Map<String, IdxSyncFile> syncFileById = syncFilePaths.keySet().stream().collect(toMap(IdxSyncFile::getFolderId, identity()));
+        var syncFileById = syncFilePaths.keySet().stream().collect(toMap(IdxSyncFile::getFolderId, identity()));
 
-        Map<IdxSyncFile, IdxSyncFile> syncSourceTarget = syncFilePaths.keySet().stream()
+        var syncSourceTarget = syncFilePaths.keySet().stream()
                 .filter(it -> it.getSourceFolderId() != null)
                 .filter(it -> syncFileById.containsKey(it.getSourceFolderId()))
                 .collect(toMap(identity(), it -> syncFileById.get(it.getSourceFolderId())));
@@ -214,13 +213,13 @@ public class IdxSync {
         } else {
             System.out.println("Matching sync folders found:");
             syncSourceTarget.keySet().stream().sorted(syncFileComparator).forEach(target -> {
-                IdxSyncFile source = syncSourceTarget.get(target);
+                var source = syncSourceTarget.get(target);
 
                 Set<String> excludePatterns = new HashSet<>();
                 target.getExcludePatterns();
                 excludePatterns.addAll(source.getExcludePatterns());
                 excludePatterns.addAll(target.getExcludePatterns());
-                Predicate<Path> excludeFilter = createExcludeFilter(excludePatterns);
+                var excludeFilter = createExcludeFilter(excludePatterns);
 
                 System.out.print(String.format("- %s %s %s -> %s\n", CHECK, format(source.getFolderName(), ANSI_BOLD, ANSI_GREEN), syncFilePaths.get(source).getParent(), syncFilePaths.get(target).getParent()));
                 result.add(new SyncJob(source.getFolderName(), syncFilePaths.get(source).getParent(), syncFilePaths.get(target).getParent(), excludeFilter));
@@ -231,9 +230,9 @@ public class IdxSync {
     }
 
     private List<FileSyncJob> diff(List<SyncJob> syncJobs) {
-        BatchTask<List<FileSyncJob>> batchTask = new BatchTask<>("Comparing files", syncJobs.stream().map(CompareFilesTask::new).collect(toList()));
-        List<FileSyncJob> fileSyncJobs = taskRunner.run(batchTask).stream().flatMap(Collection::stream).collect(toList());
-        Map<SyncAction, Long> syncActionsPerType = fileSyncJobs.stream().collect(groupingBy(f -> f.getSyncAction(), counting()));
+        var batchTask = new BatchTask<List<FileSyncJob>>("Comparing files", syncJobs.stream().map(CompareFilesTask::new).collect(toList()));
+        var fileSyncJobs = taskRunner.run(batchTask).stream().flatMap(Collection::stream).collect(toList());
+        var syncActionsPerType = fileSyncJobs.stream().collect(groupingBy(f -> f.getSyncAction(), counting()));
 
         List<String> changes = new LinkedList<>();
         Optional.ofNullable(syncActionsPerType.get(CREATE))
@@ -256,17 +255,17 @@ public class IdxSync {
             System.out.println("Changes since last sync: " + changes.stream().collect(joining(", ")));
             System.out.println();
             fileSyncJobs.stream().filter(f -> f.getSyncAction() == CREATE).forEach(f -> {
-                String output = String.format("+ %s [%s]", f.getSourcePath(), formatBytes(f.getFileSize()));
+                var output = String.format("+ %s [%s]", f.getSourcePath(), formatBytes(f.getFileSize()));
                 System.out.println(format(output, ANSI_BOLD, ANSI_GREEN));
             });
 
             fileSyncJobs.stream().filter(f -> f.getSyncAction() == UPDATE).forEach(f -> {
-                String output = String.format("* %s [%s]", f.getSourcePath(), formatBytes(f.getFileSize()));
+                var output = String.format("* %s [%s]", f.getSourcePath(), formatBytes(f.getFileSize()));
                 System.out.println(format(output, ANSI_BOLD, ANSI_BLUE));
             });
 
             fileSyncJobs.stream().filter(f -> f.getSyncAction() == DELETE).forEach(f -> {
-                String output = String.format("- %s", f.getSourcePath());
+                var output = String.format("- %s", f.getSourcePath());
                 System.out.println(format(output, ANSI_BOLD, ANSI_ORANGE));
             });
 
@@ -282,9 +281,9 @@ public class IdxSync {
 
     private void run() {
 
-        List<SyncJob> syncJobs = scan();
-        List<FileSyncJob> fileSyncJobs = diff(syncJobs);
-        SyncResult syncResult = sync(fileSyncJobs);
+        var syncJobs = scan();
+        var fileSyncJobs = diff(syncJobs);
+        var syncResult = sync(fileSyncJobs);
 
         if (syncResult.isEmpty()) {
             System.out.println("Done, no actions performed.");
@@ -304,7 +303,7 @@ public class IdxSync {
             }
             if (syncResult.getErrors().size() > 0) {
                 System.out.print(String.format("- %s errors\n", format(syncResult.getErrors().size(), ANSI_BOLD, ANSI_RED)));
-                for (String error : syncResult.getErrors()) {
+                for (var error : syncResult.getErrors()) {
                     System.out.print(String.format("  %s\n", format(error, ANSI_RED)));
                 }
             }

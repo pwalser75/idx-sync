@@ -5,7 +5,11 @@ import ch.frostnova.cli.idx.sync.SyncResult;
 import ch.frostnova.cli.idx.sync.task.Task;
 import ch.frostnova.cli.idx.sync.util.Invocation;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,9 +20,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-import static ch.frostnova.cli.idx.sync.SyncAction.*;
+import static ch.frostnova.cli.idx.sync.SyncAction.CREATE;
+import static ch.frostnova.cli.idx.sync.SyncAction.DELETE;
+import static ch.frostnova.cli.idx.sync.SyncAction.UPDATE;
 import static java.nio.file.FileVisitResult.CONTINUE;
-import static java.nio.file.Files.*;
+import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.exists;
+import static java.nio.file.Files.newInputStream;
+import static java.nio.file.Files.newOutputStream;
+import static java.nio.file.Files.readAttributes;
+import static java.nio.file.Files.setLastModifiedTime;
+import static java.nio.file.Files.walkFileTree;
 import static java.util.stream.Collectors.summarizingDouble;
 
 /**
@@ -70,7 +82,7 @@ public class SyncFilesTask implements Task<SyncResult> {
     @Override
     public SyncResult run() {
 
-        double totalCost = syncJobs.stream().collect(summarizingDouble(SyncFilesTask::getCost)).getSum();
+        var totalCost = syncJobs.stream().collect(summarizingDouble(SyncFilesTask::getCost)).getSum();
 
         long filesCreated = 0;
         long filesUpdated = 0;
@@ -80,16 +92,16 @@ public class SyncFilesTask implements Task<SyncResult> {
 
         double costDone = 0;
 
-        byte[] buffer = new byte[0xFFFF];
+        var buffer = new byte[0xFFFF];
 
-        for (FileSyncJob fileSyncJob : syncJobs) {
+        for (var fileSyncJob : syncJobs) {
             message = fileSyncJob.getSyncAction().name().toLowerCase(Locale.ROOT) + " " + fileSyncJob.getTargetPath();
             progress = costDone / totalCost;
-            double cost = getCost(fileSyncJob);
+            var cost = getCost(fileSyncJob);
 
             try {
                 if (fileSyncJob.getSyncAction() == CREATE || fileSyncJob.getSyncAction() == UPDATE) {
-                    long fileSize = fileSyncJob.getFileSize();
+                    var fileSize = fileSyncJob.getFileSize();
                     long transferred = 0;
                     createDirectories(fileSyncJob.getTargetPath().getParent());
                     try (InputStream in = new BufferedInputStream(newInputStream(fileSyncJob.getSourcePath()))) {
@@ -104,7 +116,7 @@ public class SyncFilesTask implements Task<SyncResult> {
                         }
                     }
                     bytesTransferred += transferred;
-                    BasicFileAttributes sourceAttributes = readAttributes(fileSyncJob.getSourcePath(), BasicFileAttributes.class);
+                    var sourceAttributes = readAttributes(fileSyncJob.getSourcePath(), BasicFileAttributes.class);
                     setLastModifiedTime(fileSyncJob.getTargetPath(), sourceAttributes.lastModifiedTime());
                     if (fileSyncJob.getSyncAction() == CREATE) {
                         filesCreated++;

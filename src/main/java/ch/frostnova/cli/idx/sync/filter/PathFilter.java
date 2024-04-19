@@ -22,13 +22,14 @@ public class PathFilter implements Predicate<Path> {
 
     public final static Predicate<Path> NONE = path -> false;
 
-    private final static String ANY_CHAR_SEQUENCE = "[^/]*";
-    private final static String ANY_CHAR = "[^/]";
-    private final static String ANY_PATH_SEQUENCE = "(?:[^/]+(?:/[^/]+)*/)?";
+    private final static String ANY_CHAR_SEQUENCE = "[^\\/]*";
+    private final static String ANY_CHAR = "[^\\/]";
+    private final static String ANY_PATH_SEQUENCE = ".*";
 
     private final static String ESCAPE_CHARS = ".\\?$*+-:[]()";
 
     private final static String[] DEFAULT_EXCLUDES = {
+            ".idxsync",
             "**/.idxsync",
             "*/$RECYCLE.BIN",
             "*/$Recycle.Bin",
@@ -38,24 +39,28 @@ public class PathFilter implements Predicate<Path> {
             "**/Thumbs.db",
             ".idea",
             ".gradle",
-            "node_modules"
+            "**/node_modules/**"
     };
 
     private final Pattern pattern;
 
     public PathFilter(String antWildcardPattern) {
-        String placeholderAnyPathSequence = randomUUID().toString().replace("-", "");
-        String placeholderAnyCharSequence = randomUUID().toString().replace("-", "");
-        String placeholderAnyChar = randomUUID().toString().replace("-", "");
+        var placeholderAnyPathSequence = placeholder();
+        var placeholderAnyCharSequence = placeholder();
+        var placeholderAnyChar = placeholder();
 
-        String regex = escape(antWildcardPattern
-                .replace("**/", placeholderAnyPathSequence)
+        var regex = escape(antWildcardPattern
+                .replace("**", placeholderAnyPathSequence)
                 .replace("*", placeholderAnyCharSequence)
                 .replace("?", placeholderAnyChar))
                 .replace(placeholderAnyPathSequence, ANY_PATH_SEQUENCE)
                 .replace(placeholderAnyCharSequence, ANY_CHAR_SEQUENCE)
                 .replace(placeholderAnyChar, ANY_CHAR);
-        pattern = Pattern.compile(regex);
+        pattern = Pattern.compile("^" + regex + "$");
+    }
+
+    private static String placeholder() {
+        return randomUUID().toString().replace("-", "");
     }
 
     public static Predicate<Path> defaultExcludes() {
@@ -77,8 +82,8 @@ public class PathFilter implements Predicate<Path> {
     }
 
     private static String escape(String text) {
-        StringBuffer buffer = new StringBuffer();
-        for (char c : text.toCharArray()) {
+        var buffer = new StringBuffer();
+        for (var c : text.toCharArray()) {
             if (ESCAPE_CHARS.contains(c + "")) {
                 buffer.append("\\");
             }

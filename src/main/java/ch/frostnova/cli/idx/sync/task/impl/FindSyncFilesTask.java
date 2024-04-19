@@ -4,13 +4,11 @@ import ch.frostnova.cli.idx.sync.config.IdxSyncFile;
 import ch.frostnova.cli.idx.sync.filter.PathFilter;
 import ch.frostnova.cli.idx.sync.task.Task;
 
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static ch.frostnova.cli.idx.sync.config.IdxSyncFile.FILENAME;
@@ -39,10 +37,10 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
 
     @Override
     public Map<IdxSyncFile, Path> run() {
-        int maxRecurseDepth = 5;
+        var maxRecurseDepth = 5;
 
         Map<IdxSyncFile, Path> result = new HashMap<>();
-        Predicate<Path> defaultExcludes = PathFilter.defaultExcludes();
+        var defaultExcludes = PathFilter.defaultExcludes();
 
         traverseAll(path -> {
             if (ignored.contains(path)) {
@@ -56,11 +54,11 @@ public class FindSyncFilesTask implements Task<Map<IdxSyncFile, Path>> {
                     return false;
                 }
                 this.message = path.toString();
-                Path syncFilePath = path.resolve(FILENAME);
+                var syncFilePath = path.resolve(FILENAME);
                 if (isRegularFile(syncFilePath) && runUnchecked(() -> isReadable(path))) {
                     try {
-                        URL url = syncFilePath.toUri().toURL();
-                        IdxSyncFile syncFile = yaml().readValue(url, IdxSyncFile.class);
+                        var url = syncFilePath.toUri().toURL();
+                        var syncFile = yaml().readValue(url, IdxSyncFile.class);
                         result.put(syncFile, syncFilePath);
                     } catch (Exception ignored) {
 

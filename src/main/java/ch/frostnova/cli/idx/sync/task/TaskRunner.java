@@ -34,10 +34,10 @@ public class TaskRunner {
      */
     public <R> R run(Task<R> task) {
         progressMonitor.start(task.getName());
-        ExecutionResult<R> result = new ExecutionResult<>();
-        Thread runner = new Thread(() -> {
+        var result = new ExecutionResult<R>();
+        var runner = new Thread(() -> {
             try {
-                R taskResult = task.run();
+                var taskResult = task.run();
                 synchronized (progressMonitor) {
                     progressMonitor.done("done");
                     result.done(taskResult);
@@ -49,7 +49,7 @@ public class TaskRunner {
                 }
             }
         });
-        Thread monitor = new Thread(() -> {
+        var monitor = new Thread(() -> {
             try {
                 while (!result.isDone()) {
                     synchronized (progressMonitor) {

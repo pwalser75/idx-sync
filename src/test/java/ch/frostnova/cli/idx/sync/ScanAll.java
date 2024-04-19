@@ -8,16 +8,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 public class ScanAll {
 
     public static void main(String[] args) throws IOException {
 
-        Predicate<Path> filter = PathFilter.NONE;
+        var filter = PathFilter.NONE;
 
-        long time = System.nanoTime();
-        AtomicLong count = new AtomicLong();
+        var time = System.nanoTime();
+        var count = new AtomicLong();
 
         // Done in 0.95 sec, visited 92723 file
         // Done in 0.94 sec, visited 92723 files
@@ -31,7 +30,7 @@ public class ScanAll {
         // Done in 0.34 sec, visited 92723 files
 
 
-        PrintProgress printProgress = new PrintProgress();
+        var printProgress = new PrintProgress();
         FileSystemUtil.traverse(Path.of("X:/"), path -> {
             count.incrementAndGet();
             return true;

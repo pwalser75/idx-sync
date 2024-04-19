@@ -38,7 +38,7 @@ public class FileSyncJob {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
+        var builder = new StringBuilder();
         builder.append(syncAction);
         builder.append(", source: ");
         builder.append(sourcePath);

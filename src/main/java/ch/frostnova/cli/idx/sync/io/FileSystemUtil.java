@@ -14,7 +14,10 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static ch.frostnova.cli.idx.sync.console.Console.clearLine;
-import static java.nio.file.Files.*;
+import static java.nio.file.Files.isDirectory;
+import static java.nio.file.Files.isReadable;
+import static java.nio.file.Files.isSymbolicLink;
+import static java.nio.file.Files.list;
 import static java.util.stream.Collectors.toList;
 
 public final class FileSystemUtil {
@@ -39,16 +42,16 @@ public final class FileSystemUtil {
         if (paths.isEmpty()) {
             return;
         }
-        double weight = 1d / paths.size();
+        var weight = 1d / paths.size();
 
-        ProgressCollector progressCollector = new ProgressCollector();
+        var progressCollector = new ProgressCollector();
         Consumer<Double> doneConsumer = progress -> {
             progressCollector.done(progress);
             progressConsumer.accept(progressCollector.getTotalProgress());
         };
 
         ExecutorService executorService = ForkJoinPool.commonPool();
-        Phaser phaser = new Phaser(1);
+        var phaser = new Phaser(1);
         paths.forEach(path -> {
             phaser.register();
             executorService.submit(() -> {
@@ -60,12 +63,12 @@ public final class FileSystemUtil {
     }
 
     public static void traverseAll(ProgressFileVisitor fileVisitor) {
-        List<Path> list = StreamSupport.stream(FileSystems.getDefault().getRootDirectories().spliterator(), false).collect(toList());
-        int n = list.size();
-        int index = 0;
-        for (Path child : list) {
-            double lowerBound = (double) index / n;
-            double upperBound = (double) (index + 1) / n;
+        var list = StreamSupport.stream(FileSystems.getDefault().getRootDirectories().spliterator(), false).collect(toList());
+        var n = list.size();
+        var index = 0;
+        for (var child : list) {
+            var lowerBound = (double) index / n;
+            var upperBound = (double) (index + 1) / n;
             index++;
             traverse(child, fileVisitor, lowerBound, upperBound);
         }
@@ -76,15 +79,15 @@ public final class FileSystemUtil {
     }
 
     public static boolean traverse(Path path, ProgressFileVisitor fileVisitor, double progressLowerBound, double progressUpperBound) {
-        boolean continueTraverse = fileVisitor.visit(path, progressLowerBound);
+        var continueTraverse = fileVisitor.visit(path, progressLowerBound);
         if (continueTraverse && isDirectory(path) && isReadable(path) && !isSymbolicLink(path)) {
             try {
-                List<Path> list = list(path).collect(toList());
-                int n = list.size();
-                int index = 0;
-                for (Path child : list) {
-                    double lowerBound = progressLowerBound + (progressUpperBound - progressLowerBound) * index / n;
-                    double upperBound = progressLowerBound + (progressUpperBound - progressLowerBound) * (index + 1) / n;
+                var list = list(path).collect(toList());
+                var n = list.size();
+                var index = 0;
+                for (var child : list) {
+                    var lowerBound = progressLowerBound + (progressUpperBound - progressLowerBound) * index / n;
+                    var upperBound = progressLowerBound + (progressUpperBound - progressLowerBound) * (index + 1) / n;
                     index++;
                     if (!traverse(child, fileVisitor, lowerBound, upperBound)) {
                         return true;
@@ -102,12 +105,12 @@ public final class FileSystemUtil {
     private static void process(ExecutorService executorService, Phaser phaser, Path path, FileVisitor fileVisitor,
                                 double weight, Consumer<Double> doneConsumer) {
         try {
-            boolean recurse = fileVisitor.visit(path);
+            var recurse = fileVisitor.visit(path);
             if (Files.isDirectory(path) && recurse) {
                 try {
-                    List<Path> paths = list(path).collect(toList());
+                    var paths = list(path).collect(toList());
                     if (!paths.isEmpty()) {
-                        double childWeight = weight / paths.size();
+                        var childWeight = weight / paths.size();
                         paths.forEach(child -> {
                             phaser.register();
                             executorService.submit(() -> {

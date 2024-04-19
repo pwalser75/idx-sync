@@ -90,7 +90,7 @@ public class IdxSyncFile {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        IdxSyncFile that = (IdxSyncFile) o;
+        var that = (IdxSyncFile) o;
         return Objects.equals(folderId, that.folderId);
     }
 

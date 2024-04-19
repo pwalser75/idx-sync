@@ -26,14 +26,14 @@ public class FileBenchmark {
 
     private static Path createTestFile(long sizeInBytes) {
         try {
-            Path file = createTempFile("test-file", String.valueOf(sizeInBytes));
+            var file = createTempFile("test-file", String.valueOf(sizeInBytes));
             Random random = ThreadLocalRandom.current();
-            byte[] buffer = new byte[4096];
-            long bytesRemaining = sizeInBytes;
+            var buffer = new byte[4096];
+            var bytesRemaining = sizeInBytes;
             try (OutputStream out = new BufferedOutputStream((newOutputStream(file)))) {
                 while (bytesRemaining > 0) {
                     random.nextBytes(buffer);
-                    int bytesToWrite = (int) Math.min(bytesRemaining, buffer.length);
+                    var bytesToWrite = (int) Math.min(bytesRemaining, buffer.length);
                     out.write(buffer, 0, bytesToWrite);
                     bytesRemaining -= bytesToWrite;
                 }
@@ -50,21 +50,21 @@ public class FileBenchmark {
     void benchmarkFileCopy() throws IOException {
 
 
-        Path targetDir = Paths.get("/media/piwi/idx Backup/Test");
+        var targetDir = Paths.get("/media/piwi/idx Backup/Test");
         if (!exists(targetDir)) {
             createDirectories(targetDir);
         }
 
-        int loops = 10;
-        byte[] buffer = new byte[4096];
+        var loops = 10;
+        var buffer = new byte[4096];
 
-        for (int b = 0; b <= 20; b++) {
+        for (var b = 0; b <= 20; b++) {
 
             long totalTimeNs = 0;
-            for (int i = 0; i < loops; i++) {
-                Path target = targetDir.resolve("test-" + b + "-" + i);
-                Path source = createTestFile(1 << b);
-                long startTimeNs = System.nanoTime();
+            for (var i = 0; i < loops; i++) {
+                var target = targetDir.resolve("test-" + b + "-" + i);
+                var source = createTestFile(1 << b);
+                var startTimeNs = System.nanoTime();
                 try (InputStream in = new BufferedInputStream((newInputStream(source)))) {
                     try (OutputStream out = new BufferedOutputStream((newOutputStream(target)))) {
                         int read;
@@ -78,7 +78,7 @@ public class FileBenchmark {
                 delete(source);
                 delete(target);
             }
-            long time = totalTimeNs / loops;
+            var time = totalTimeNs / loops;
             System.out.println("File Size " + (1 << b) + ": " + new DecimalFormat("0.000000").format(time / 1e9) + " sec");
         }
     }
